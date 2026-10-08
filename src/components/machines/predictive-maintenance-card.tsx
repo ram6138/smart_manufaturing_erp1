@@ -106,20 +106,20 @@ export function PredictiveMaintenanceCard({
             return (
               <div
                 key={machine.id}
-                className={`flex flex-col justify-between p-4 rounded-xl transition-all space-y-3 ${
+                className={`flex flex-col justify-between p-4.5 rounded-xl transition-all space-y-3.5 ${
                   isCritical || isHigh
-                    ? "bg-slate-950/85 border border-orange-500/50 shadow-lg shadow-orange-500/10 ring-1 ring-orange-500/30"
-                    : "bg-slate-950/60 border border-slate-800 hover:border-slate-700"
+                    ? "bg-[#0f172a] border-2 border-amber-500/80 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/40"
+                    : "bg-[#0f172a] border border-slate-700 hover:border-slate-600 shadow-md"
                 }`}
               >
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   {/* Top header: Code, Name, Risk indicator */}
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-800">
                     <div>
-                      <span className="font-mono text-xs font-bold text-cyan-400">
+                      <span className="font-mono text-xs font-bold text-cyan-400 tracking-wider">
                         {machine.machineCode}
                       </span>
-                      <h3 className="text-sm font-bold text-white">
+                      <h3 className="text-sm font-bold text-white tracking-wide mt-0.5">
                         {machine.machineName}
                       </h3>
                     </div>
@@ -132,7 +132,7 @@ export function PredictiveMaintenanceCard({
                   </div>
 
                   {/* Main Risk Factor Badge */}
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-xs space-y-0.5">
+                  <div className="p-2.5 rounded-lg bg-[#1e293b] border border-slate-700 text-xs space-y-0.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 block">
                       Primary Failure Risk Factor
                     </span>
@@ -142,23 +142,25 @@ export function PredictiveMaintenanceCard({
                   </div>
 
                   {/* Prediction Explanation */}
-                  <p className="text-xs font-semibold text-white leading-relaxed">
-                    {pred.prediction}
-                  </p>
+                  <div className="p-2.5 rounded-lg bg-[#020617] border border-slate-800 text-xs">
+                    <p className="text-white text-xs font-medium leading-relaxed">
+                      {pred.prediction}
+                    </p>
+                  </div>
 
                   {/* Prescribed Action */}
-                  <div className="p-3 rounded-lg bg-cyan-950/60 border border-cyan-500/50 text-xs space-y-1">
+                  <div className="p-3 rounded-lg bg-[#082f49] border border-cyan-500/60 text-xs space-y-1">
                     <span className="text-xs font-bold uppercase tracking-wider text-cyan-300 block">
                       💡 Prescribed Maintenance Action:
                     </span>
-                    <p className="text-white text-xs font-medium leading-relaxed">
+                    <p className="text-white text-xs font-semibold leading-relaxed">
                       {pred.recommendedAction}
                     </p>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
+                <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
                   <button
                     onClick={() => onViewMachine(machine)}
                     className="text-xs font-bold text-cyan-400 hover:text-cyan-200 transition"
@@ -168,10 +170,10 @@ export function PredictiveMaintenanceCard({
 
                   <button
                     onClick={() => onScheduleMaintenance(machine)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition active:scale-95 ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold text-xs transition active:scale-95 ${
                       isCritical || isHigh
-                        ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-md font-extrabold"
-                        : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-600"
+                        ? "bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md font-extrabold"
+                        : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 font-bold"
                     }`}
                   >
                     <Wrench className="w-3.5 h-3.5" />
