@@ -198,7 +198,7 @@ export function MachineHealthTable({
                       {/* View details */}
                       <button
                         onClick={() => onViewMachine(machine)}
-                        className="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition shadow-xs"
+                        className="p-1.5 rounded-lg bg-cyan-950/90 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/60 transition shadow-sm"
                         title="View Telemetry & Maintenance History"
                         aria-label="View Machine"
                       >
@@ -208,7 +208,7 @@ export function MachineHealthTable({
                       {/* Schedule Maintenance */}
                       <button
                         onClick={() => onScheduleMaintenance(machine)}
-                        className="p-1.5 rounded-lg bg-blue-50 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 text-blue-700 border border-blue-200 transition shadow-xs"
+                        className="p-1.5 rounded-lg bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-700/60 transition shadow-sm"
                         title="Schedule Preventive or Corrective Maintenance"
                         aria-label="Schedule Maintenance"
                       >

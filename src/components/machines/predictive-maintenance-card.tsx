@@ -12,6 +12,7 @@ import {
   Wrench,
   Clock,
   CheckCircle2,
+  Activity,
 } from "lucide-react";
 
 interface PredictiveMaintenanceCardProps {
@@ -163,20 +164,21 @@ export function PredictiveMaintenanceCard({
                 <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
                   <button
                     onClick={() => onViewMachine(machine)}
-                    className="text-xs font-bold text-cyan-400 hover:text-cyan-200 transition"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-white border border-slate-700 text-xs font-bold transition shadow-sm"
                   >
-                    View Telemetry
+                    <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>View Telemetry</span>
                   </button>
 
                   <button
                     onClick={() => onScheduleMaintenance(machine)}
-                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-bold text-xs transition active:scale-95 ${
+                    className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-extrabold text-xs transition active:scale-95 shadow-md ${
                       isCritical || isHigh
-                        ? "bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md font-extrabold"
-                        : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 font-bold"
+                        ? "bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-300 ring-1 ring-amber-400/40"
+                        : "bg-cyan-500 hover:bg-cyan-400 text-slate-950 border border-cyan-300 ring-1 ring-cyan-400/40"
                     }`}
                   >
-                    <Wrench className="w-3.5 h-3.5" />
+                    <Wrench className="w-3.5 h-3.5 stroke-[2.5]" />
                     <span>Schedule PM</span>
                   </button>
                 </div>
