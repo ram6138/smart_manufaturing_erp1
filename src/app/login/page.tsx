@@ -28,10 +28,8 @@ export default function LoginPage() {
             type="video/mp4"
           />
         </video>
-        {/* Ambient base tint */}
-        <div className="absolute inset-0 bg-black/20" />
-        {/* Right side black gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/40 via-45% to-black/85" />
+        {/* Left side black gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 via-45% to-black/15" />
       </div>
 
       {/* Top Navbar Header */}
