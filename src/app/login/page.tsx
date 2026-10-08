@@ -12,13 +12,29 @@ import {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-50 text-slate-900 selection:bg-cyan-100 selection:text-cyan-900">
-      {/* Background ambient lighting & grid */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(14,165,233,0.08),rgba(255,255,255,0))] z-0" />
-      <div className="fixed inset-0 pointer-events-none bg-[linear-gradient(to_right,#0f172a08_1px,transparent_1px),linear-gradient(to_bottom,#0f172a08_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] z-0" />
+    <div className="min-h-screen relative flex flex-col justify-between text-slate-900 selection:bg-cyan-100 selection:text-cyan-900 overflow-x-hidden">
+      {/* Background Video (Continuous Loop) */}
+      <div className="fixed inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="w-full h-full object-cover scale-105"
+        >
+          <source
+            src="https://res.cloudinary.com/n0c7bqpd/video/upload/v1791496862/Animate_corporate_technology_ill__20261009032757_q1ayo5.mp4"
+            type="video/mp4"
+          />
+        </video>
+        {/* Soft frosted glass overlay for high-contrast text & clean readability */}
+        <div className="absolute inset-0 bg-white/45 backdrop-blur-[1.5px]" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/10 via-transparent to-cyan-500/10" />
+      </div>
 
       {/* Top Navbar Header */}
-      <header className="relative z-10 border-b border-slate-200 bg-white/80 backdrop-blur-md">
+      <header className="relative z-10 border-b border-slate-200/80 bg-white/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-600/20">
