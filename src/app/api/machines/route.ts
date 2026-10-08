@@ -145,10 +145,10 @@ export async function GET() {
         return { baseTemp: 46.8, tempVar: 3.8, tempLimit: 65, baseVib: 2.18, vibVar: 0.38, vibLimit: 4.5, baseLoad: 71, basePower: 17.5, location: 'Packaging Line 1 — Bay C' };
       }
       if (c === 'PACK-02') {
-        return { baseTemp: 52.4, tempVar: 4.2, tempLimit: 68, baseVib: 2.72, vibVar: 0.52, vibLimit: 4.5, baseLoad: 77, basePower: 21.2, location: 'Packaging Line 2 — Bay D' };
+        return { baseTemp: isWarning ? 58.5 : 52.4, tempVar: 5.2, tempLimit: 68, baseVib: isWarning ? 4.65 : 2.72, vibVar: 0.52, vibLimit: 4.5, baseLoad: 88, basePower: 23.5, location: 'Packaging Line 2 — Bay D' };
       }
       if (c === 'LINE-01') {
-        return { baseTemp: 58.2, tempVar: 4.6, tempLimit: 75, baseVib: 2.28, vibVar: 0.42, vibLimit: 4.5, baseLoad: 82, basePower: 67.5, location: 'Main Production Floor 1' };
+        return { baseTemp: isWarning ? 65.2 : 58.2, tempVar: 5.8, tempLimit: 75, baseVib: isWarning ? 4.58 : 2.28, vibVar: 0.55, vibLimit: 4.5, baseLoad: 91, basePower: 74.0, location: 'Main Production Floor 1' };
       }
       if (c === 'LINE-02') {
         return { baseTemp: 53.6, tempVar: 3.9, tempLimit: 75, baseVib: 1.88, vibVar: 0.35, vibLimit: 4.5, baseLoad: 78, basePower: 61.0, location: 'Main Production Floor 2' };
@@ -267,7 +267,11 @@ export async function GET() {
       const rawStatus = (m.status || 'Running').trim();
       let normalizedStatus: 'Running' | 'Idle' | 'Maintenance' | 'Warning' = 'Running';
       const sLower = rawStatus.toLowerCase();
-      if (sLower === 'warning' || sLower === 'alert' || sLower === 'degraded') {
+      
+      // Known defective / warning equipment for rich simulation
+      if (m.machineCode === 'MCH-OVN-002' || m.machineCode === 'PACK-02' || m.machineCode === 'LINE-01') {
+        normalizedStatus = 'Warning';
+      } else if (sLower === 'warning' || sLower === 'alert' || sLower === 'degraded') {
         normalizedStatus = 'Warning';
       } else if (sLower === 'maintenance' || sLower === 'under maintenance' || sLower === 'repair' || sLower === 'offline') {
         normalizedStatus = 'Maintenance';
@@ -277,13 +281,48 @@ export async function GET() {
         normalizedStatus = 'Running';
       }
 
-      const riskLevel = machinePred?.riskLevel || (normalizedStatus === 'Warning' ? 'High' : normalizedStatus === 'Maintenance' ? 'Critical' : 'Low');
-      const riskScore = machinePred ? Number(machinePred.riskScore) : (normalizedStatus === 'Warning' ? 82.0 : normalizedStatus === 'Maintenance' ? 94.0 : 18.5);
+      let riskLevel = machinePred?.riskLevel || (normalizedStatus === 'Warning' ? 'High' : normalizedStatus === 'Maintenance' ? 'Critical' : 'Low');
+      let riskScore = machinePred ? Number(machinePred.riskScore) : (normalizedStatus === 'Warning' ? 82.0 : normalizedStatus === 'Maintenance' ? 94.0 : 18.5);
+
+      if (m.machineCode === 'PACK-02') {
+        riskScore = 76.0;
+        riskLevel = 'High';
+      } else if (m.machineCode === 'LINE-01') {
+        riskScore = 68.5;
+        riskLevel = 'High';
+      }
 
       const generatedSensors = generateMachineSensors(m, normalizedStatus);
       const finalSensors = machineSensors.length >= 4 ? machineSensors : generatedSensors;
       const latestReading = finalSensors[finalSensors.length - 1];
       const profile = getMachineProfile(m.machineCode, m.machineName, m.machineType, normalizedStatus);
+
+      let mainRiskFactor = 'Normal Bearing Uptime';
+      let prediction = 'Stable operations within temperature tolerances';
+      let recommendedAction = 'Routine inspection at next shift';
+      let predictedFailureWindow = 'None expected';
+
+      if (m.machineCode === 'MCH-OVN-002') {
+        mainRiskFactor = 'Thermal gradient & blower vibration';
+        prediction = 'Thermal drift variance detected in zone 2 heating manifold';
+        recommendedAction = 'Review operating conditions and inspect heating elements';
+        predictedFailureWindow = '24-48 hours';
+      } else if (m.machineCode === 'PACK-02') {
+        mainRiskFactor = 'Cutter head misalignment & harmonic vibration';
+        prediction = 'Continuous vibration amplitude spike on sealing jaw assembly';
+        recommendedAction = 'Calibrate rotary cutter blades & lubricate servo drive bearings';
+        predictedFailureWindow = '36-48 hours';
+      } else if (m.machineCode === 'LINE-01') {
+        mainRiskFactor = 'Drive gearbox bearing wear & torque fluctuation';
+        prediction = 'Motor load oscillations exceeding nominal baseline during high speed run';
+        recommendedAction = 'Inspect main gearbox lubricant and check conveyor belt tension';
+        predictedFailureWindow = '48-72 hours';
+      } else if (normalizedStatus === 'Warning') {
+        mainRiskFactor = 'Mechanical friction & harmonic noise';
+        prediction = 'Sensor reading drift outside nominal threshold';
+        recommendedAction = 'Perform preventive check';
+        predictedFailureWindow = '24-48 hours';
+      }
 
       return {
         ...m,
@@ -314,11 +353,11 @@ export async function GET() {
           machineName: m.machineName,
           riskScore,
           riskLevel,
-          mainRiskFactor: normalizedStatus === 'Warning' ? 'Thermal gradient & blower vibration' : 'Normal Bearing Uptime',
-          prediction: normalizedStatus === 'Warning' ? 'Thermal drift variance detected in zone 2' : 'Stable operations within temperature tolerances',
-          recommendedAction: normalizedStatus === 'Warning' ? 'Review operating conditions and inspect heating elements' : 'Routine inspection at next shift',
+          mainRiskFactor,
+          prediction,
+          recommendedAction,
           confidenceScore: 92.4,
-          predictedFailureWindow: normalizedStatus === 'Warning' ? '24-48 hours' : 'None expected',
+          predictedFailureWindow,
           predictionDate: new Date().toISOString().split('T')[0],
         },
       };

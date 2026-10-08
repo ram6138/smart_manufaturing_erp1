@@ -88,91 +88,100 @@ export function PredictiveMaintenanceCard({
         </div>
       </div>
 
-      {/* Prediction Cards Grid */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {displayedMachines.map((machine) => {
-          const pred = machine.prediction;
-          const isCritical = pred.riskLevel === "Critical";
-          const isHigh = pred.riskLevel === "High";
+      {/* Prediction Cards Grid Container with vertical scrollbar when expanded */}
+      <div
+        className={`relative z-10 ${
+          showAll || displayedMachines.length > 3
+            ? "max-h-[560px] overflow-y-auto pr-2.5 space-y-4 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-slate-950/60 hover:scrollbar-thumb-cyan-500/50"
+            : ""
+        }`}
+        style={{ scrollbarGutter: "stable" }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {displayedMachines.map((machine) => {
+            const pred = machine.prediction;
+            const isCritical = pred.riskLevel === "Critical";
+            const isHigh = pred.riskLevel === "High";
 
-          return (
-            <div
-              key={machine.id}
-              className={`flex flex-col justify-between p-4 rounded-xl transition-all space-y-3 ${
-                isCritical || isHigh
-                  ? "bg-slate-950/80 border border-orange-500/40 shadow-lg shadow-orange-500/5 ring-1 ring-orange-500/20"
-                  : "bg-slate-950/60 border border-slate-800 hover:border-slate-700"
-              }`}
-            >
-              <div className="space-y-2.5">
-                {/* Top header: Code, Name, Risk indicator */}
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <span className="font-mono text-xs font-bold text-cyan-400">
-                      {machine.machineCode}
-                    </span>
-                    <h3 className="text-sm font-bold text-white">
-                      {machine.machineName}
-                    </h3>
+            return (
+              <div
+                key={machine.id}
+                className={`flex flex-col justify-between p-4 rounded-xl transition-all space-y-3 ${
+                  isCritical || isHigh
+                    ? "bg-slate-950/85 border border-orange-500/50 shadow-lg shadow-orange-500/10 ring-1 ring-orange-500/30"
+                    : "bg-slate-950/60 border border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                <div className="space-y-2.5">
+                  {/* Top header: Code, Name, Risk indicator */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="font-mono text-xs font-bold text-cyan-400">
+                        {machine.machineCode}
+                      </span>
+                      <h3 className="text-sm font-bold text-white">
+                        {machine.machineName}
+                      </h3>
+                    </div>
+
+                    <RiskIndicator
+                      riskLevel={pred.riskLevel}
+                      riskScore={pred.riskScore}
+                      showMeter={false}
+                    />
                   </div>
 
-                  <RiskIndicator
-                    riskLevel={pred.riskLevel}
-                    riskScore={pred.riskScore}
-                    showMeter={false}
-                  />
-                </div>
+                  {/* Main Risk Factor Badge */}
+                  <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">
+                      Primary Failure Risk Factor
+                    </span>
+                    <span className="font-semibold text-amber-300">
+                      {pred.mainRiskFactor}
+                    </span>
+                  </div>
 
-                {/* Main Risk Factor Badge */}
-                <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">
-                    Primary Failure Risk Factor
-                  </span>
-                  <span className="font-semibold text-amber-300">
-                    {pred.mainRiskFactor}
-                  </span>
-                </div>
-
-                {/* Prediction Explanation */}
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  {pred.prediction}
-                </p>
-
-                {/* Prescribed Action */}
-                <div className="p-2.5 rounded-lg bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block">
-                    💡 Prescribed Maintenance Action:
-                  </span>
-                  <p className="text-slate-200 text-[11px] leading-snug">
-                    {pred.recommendedAction}
+                  {/* Prediction Explanation */}
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    {pred.prediction}
                   </p>
+
+                  {/* Prescribed Action */}
+                  <div className="p-2.5 rounded-lg bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block">
+                      💡 Prescribed Maintenance Action:
+                    </span>
+                    <p className="text-slate-200 text-[11px] leading-snug">
+                      {pred.recommendedAction}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 text-xs">
+                  <button
+                    onClick={() => onViewMachine(machine)}
+                    className="text-xs text-slate-400 hover:text-cyan-400 transition"
+                  >
+                    View Telemetry
+                  </button>
+
+                  <button
+                    onClick={() => onScheduleMaintenance(machine)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition active:scale-95 ${
+                      isCritical || isHigh
+                        ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-md font-bold"
+                        : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                    }`}
+                  >
+                    <Wrench className="w-3.5 h-3.5" />
+                    <span>Schedule PM</span>
+                  </button>
                 </div>
               </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 text-xs">
-                <button
-                  onClick={() => onViewMachine(machine)}
-                  className="text-xs text-slate-400 hover:text-cyan-400 transition"
-                >
-                  View Telemetry
-                </button>
-
-                <button
-                  onClick={() => onScheduleMaintenance(machine)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition active:scale-95 ${
-                    isCritical || isHigh
-                      ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-md font-bold"
-                      : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
-                  }`}
-                >
-                  <Wrench className="w-3.5 h-3.5" />
-                  <span>Schedule PM</span>
-                </button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
