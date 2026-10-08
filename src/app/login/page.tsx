@@ -9,7 +9,6 @@ import {
   Layers,
   ShieldCheck,
   Zap,
-  Sparkles,
   Bot,
 } from "lucide-react";
 
@@ -95,11 +94,6 @@ export default function LoginPage() {
         <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Hero & Value Proposition in Guaranteed Pure White */}
           <div className="hidden lg:flex lg:col-span-6 flex-col justify-center space-y-6 pr-4 text-white">
-            <div className="gsap-fade-in inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/80 text-xs font-semibold text-cyan-300 shadow-sm w-fit">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              Next-Gen Factory Intelligence
-            </div>
-
             <h1
               style={{ color: "#ffffff" }}
               className="gsap-fade-in text-4xl sm:text-5xl font-extrabold tracking-tight !text-white leading-tight drop-shadow-lg"
@@ -159,16 +153,6 @@ export default function LoginPage() {
                   Multi-tier access for 9 specialized factory departments.
                 </p>
               </div>
-            </div>
-
-            {/* System Status pill */}
-            <div className="gsap-fade-in flex items-center gap-3 pt-2 text-xs text-slate-300 font-medium">
-              <div className="flex items-center gap-1.5 text-cyan-300">
-                <Zap className="w-4 h-4 text-cyan-400" />
-                <span>Next.js App Router Architecture</span>
-              </div>
-              <span>•</span>
-              <span className="text-white">Live System Connection</span>
             </div>
           </div>
 
