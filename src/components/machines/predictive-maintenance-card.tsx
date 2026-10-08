@@ -106,20 +106,20 @@ export function PredictiveMaintenanceCard({
             return (
               <div
                 key={machine.id}
-                className={`flex flex-col justify-between p-4.5 rounded-xl transition-all space-y-3.5 bg-slate-900/95 border ${
+                className={`flex flex-col justify-between p-4 rounded-xl transition-all space-y-3 ${
                   isCritical || isHigh
-                    ? "border-amber-500/70 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/30"
-                    : "border-slate-700/80 hover:border-slate-600"
+                    ? "bg-slate-950/85 border border-orange-500/50 shadow-lg shadow-orange-500/10 ring-1 ring-orange-500/30"
+                    : "bg-slate-950/60 border border-slate-800 hover:border-slate-700"
                 }`}
               >
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {/* Top header: Code, Name, Risk indicator */}
-                  <div className="flex items-start justify-between gap-2 pb-2.5 border-b border-slate-800">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="font-mono text-xs font-bold text-cyan-300 tracking-wider">
+                      <span className="font-mono text-xs font-bold text-cyan-400">
                         {machine.machineCode}
                       </span>
-                      <h3 className="text-sm font-bold text-white tracking-wide mt-0.5">
+                      <h3 className="text-sm font-bold text-white">
                         {machine.machineName}
                       </h3>
                     </div>
@@ -131,49 +131,47 @@ export function PredictiveMaintenanceCard({
                     />
                   </div>
 
-                  {/* Primary Risk Factor */}
-                  <div className="text-xs space-y-1">
-                    <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
-                      Primary Risk Factor
+                  {/* Main Risk Factor Badge */}
+                  <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">
+                      Primary Failure Risk Factor
                     </span>
-                    <p className="text-xs font-bold text-amber-300">
+                    <span className="font-semibold text-amber-300">
                       {pred.mainRiskFactor}
-                    </p>
+                    </span>
                   </div>
 
                   {/* Prediction Explanation */}
-                  <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-700/70 text-xs">
-                    <p className="text-white text-xs leading-relaxed font-normal">
-                      {pred.prediction}
-                    </p>
-                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    {pred.prediction}
+                  </p>
 
                   {/* Prescribed Action */}
-                  <div className="p-3 rounded-lg bg-cyan-950/50 border border-cyan-500/40 text-xs space-y-1.5">
-                    <span className="text-[11px] font-bold text-cyan-300 flex items-center gap-1.5 uppercase tracking-wider">
-                      <span>💡</span> Prescribed Action:
+                  <div className="p-2.5 rounded-lg bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block">
+                      💡 Prescribed Maintenance Action:
                     </span>
-                    <p className="text-white text-xs leading-snug font-medium">
+                    <p className="text-slate-200 text-[11px] leading-snug">
                       {pred.recommendedAction}
                     </p>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 text-xs">
                   <button
                     onClick={() => onViewMachine(machine)}
-                    className="text-xs font-bold text-cyan-400 hover:text-cyan-200 transition"
+                    className="text-xs text-slate-400 hover:text-cyan-400 transition"
                   >
                     View Telemetry
                   </button>
 
                   <button
                     onClick={() => onScheduleMaintenance(machine)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition active:scale-95 ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition active:scale-95 ${
                       isCritical || isHigh
-                        ? "bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md font-extrabold"
-                        : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-600"
+                        ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-md font-bold"
+                        : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
                     }`}
                   >
                     <Wrench className="w-3.5 h-3.5" />

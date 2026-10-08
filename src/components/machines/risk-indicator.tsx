@@ -59,32 +59,32 @@ export function RiskIndicator({
     switch (level) {
       case "Critical":
         return {
-          text: "text-rose-300",
-          bg: "bg-rose-500/20 text-rose-200 border-rose-500/60 shadow-sm",
+          text: "text-rose-400",
+          bg: "bg-rose-950/80 text-rose-300 border-rose-800/80",
           bar: "bg-rose-500",
         };
       case "High":
         return {
-          text: "text-amber-300",
-          bg: "bg-amber-500/20 text-amber-200 border-amber-500/60 shadow-sm",
-          bar: "bg-amber-500",
+          text: "text-orange-400",
+          bg: "bg-orange-950/80 text-orange-300 border-orange-800/80",
+          bar: "bg-orange-500",
         };
       case "Medium":
         return {
-          text: "text-yellow-300",
-          bg: "bg-yellow-500/20 text-yellow-200 border-yellow-500/60 shadow-sm",
-          bar: "bg-yellow-500",
+          text: "text-amber-400",
+          bg: "bg-amber-950/80 text-amber-300 border-amber-800/80",
+          bar: "bg-amber-500",
         };
       case "Low":
         return {
-          text: "text-emerald-300",
-          bg: "bg-emerald-500/20 text-emerald-200 border-emerald-500/60 shadow-sm",
+          text: "text-emerald-400",
+          bg: "bg-emerald-950/80 text-emerald-300 border-emerald-800/80",
           bar: "bg-emerald-500",
         };
       default:
         return {
-          text: "text-cyan-300",
-          bg: "bg-cyan-500/20 text-cyan-200 border-cyan-500/60 shadow-sm",
+          text: "text-cyan-400",
+          bg: "bg-cyan-950/80 text-cyan-300 border-cyan-800/80",
           bar: "bg-cyan-500",
         };
     }
