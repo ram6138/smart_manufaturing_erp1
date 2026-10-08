@@ -25,8 +25,20 @@ export function PredictiveMaintenanceCard({
   onScheduleMaintenance,
   onViewMachine,
 }: PredictiveMaintenanceCardProps) {
-  // Sort machines by risk score descending (highest risk first)
-  const sortedMachines = [...machines].sort(
+  const [showAll, setShowAll] = React.useState(false);
+
+  // Filter for machines with warnings, critical, high or elevated risk
+  const flaggedMachines = machines.filter(
+    (m) =>
+      m.prediction.riskLevel === "Critical" ||
+      m.prediction.riskLevel === "High" ||
+      m.prediction.riskLevel === "Medium" ||
+      m.prediction.riskScore > 30 ||
+      m.status === "Warning" ||
+      m.status === "Maintenance"
+  );
+
+  const displayedMachines = (showAll ? machines : (flaggedMachines.length > 0 ? flaggedMachines : machines)).sort(
     (a, b) => b.prediction.riskScore - a.prediction.riskScore
   );
 
@@ -49,21 +61,36 @@ export function PredictiveMaintenanceCard({
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                 AI / ML PROTOTYPE
               </span>
+              {flaggedMachines.length > 0 && (
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                  {flaggedMachines.length} Action Required
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Anomaly detection & early failure prediction model based on multi-sensor telemetry regression
+              Anomaly detection & early failure prediction model focusing on equipment requiring preventative service
             </p>
           </div>
         </div>
 
-        <span className="text-xs font-mono text-cyan-400/90 self-start sm:self-auto">
-          5 Predictive Models Synchronized
-        </span>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {flaggedMachines.length > 0 && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-950 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition"
+            >
+              {showAll ? `Show Flagged Only (${flaggedMachines.length})` : `Show All (${machines.length})`}
+            </button>
+          )}
+          <span className="text-xs font-mono text-cyan-400/90 hidden md:inline">
+            {machines.length} Models Synchronized
+          </span>
+        </div>
       </div>
 
       {/* Prediction Cards Grid */}
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedMachines.map((machine) => {
+        {displayedMachines.map((machine) => {
           const pred = machine.prediction;
           const isCritical = pred.riskLevel === "Critical";
           const isHigh = pred.riskLevel === "High";
