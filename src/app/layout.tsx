@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/auth-context";
+import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,9 @@ export default function RootLayout({
         suppressHydrationWarning
         className="min-h-full flex flex-col bg-slate-50 text-slate-900 font-sans selection:bg-cyan-100 selection:text-cyan-900"
       >
-        <AuthProvider>{children}</AuthProvider>
+        <SmoothScrollProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );
