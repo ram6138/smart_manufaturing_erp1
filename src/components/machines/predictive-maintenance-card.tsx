@@ -132,46 +132,46 @@ export function PredictiveMaintenanceCard({
                   </div>
 
                   {/* Main Risk Factor Badge */}
-                  <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-xs">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-0.5">
+                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-700 text-xs space-y-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 block">
                       Primary Failure Risk Factor
                     </span>
-                    <span className="font-semibold text-amber-300">
+                    <span className="font-bold text-amber-300 text-xs block">
                       {pred.mainRiskFactor}
                     </span>
                   </div>
 
                   {/* Prediction Explanation */}
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                  <p className="text-xs font-semibold text-white leading-relaxed">
                     {pred.prediction}
                   </p>
 
                   {/* Prescribed Action */}
-                  <div className="p-2.5 rounded-lg bg-cyan-950/30 border border-cyan-500/30 text-xs space-y-1">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400 block">
+                  <div className="p-3 rounded-lg bg-cyan-950/60 border border-cyan-500/50 text-xs space-y-1">
+                    <span className="text-xs font-bold uppercase tracking-wider text-cyan-300 block">
                       💡 Prescribed Maintenance Action:
                     </span>
-                    <p className="text-slate-200 text-[11px] leading-snug">
+                    <p className="text-white text-xs font-medium leading-relaxed">
                       {pred.recommendedAction}
                     </p>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 text-xs">
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
                   <button
                     onClick={() => onViewMachine(machine)}
-                    className="text-xs text-slate-400 hover:text-cyan-400 transition"
+                    className="text-xs font-bold text-cyan-400 hover:text-cyan-200 transition"
                   >
                     View Telemetry
                   </button>
 
                   <button
                     onClick={() => onScheduleMaintenance(machine)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs transition active:scale-95 ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-xs transition active:scale-95 ${
                       isCritical || isHigh
-                        ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-md font-bold"
-                        : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                        ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 shadow-md font-extrabold"
+                        : "bg-slate-800 hover:bg-slate-700 text-white border border-slate-600"
                     }`}
                   >
                     <Wrench className="w-3.5 h-3.5" />
