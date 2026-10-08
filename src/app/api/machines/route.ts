@@ -82,15 +82,170 @@ export async function GET() {
       FROM machine_failure_predictions;
     `);
 
-    // Generate standard 24h fallback sensor time-series if sparse
-    const defaultSensorPoints = [
-      { timestamp: "00:00", hourLabel: "00:00", temperature: 68.2, temperatureThreshold: 85, vibration: 1.8, vibrationThreshold: 4.5, motorLoad: 65, powerConsumption: 38.5 },
-      { timestamp: "04:00", hourLabel: "04:00", temperature: 70.1, temperatureThreshold: 85, vibration: 2.1, vibrationThreshold: 4.5, motorLoad: 70, powerConsumption: 40.2 },
-      { timestamp: "08:00", hourLabel: "08:00", temperature: 74.8, temperatureThreshold: 85, vibration: 2.7, vibrationThreshold: 4.5, motorLoad: 82, powerConsumption: 44.1 },
-      { timestamp: "12:00", hourLabel: "12:00", temperature: 76.5, temperatureThreshold: 85, vibration: 2.9, vibrationThreshold: 4.5, motorLoad: 85, powerConsumption: 45.8 },
-      { timestamp: "16:00", hourLabel: "16:00", temperature: 73.4, temperatureThreshold: 85, vibration: 2.5, vibrationThreshold: 4.5, motorLoad: 78, powerConsumption: 42.0 },
-      { timestamp: "20:00", hourLabel: "20:00", temperature: 71.9, temperatureThreshold: 85, vibration: 2.3, vibrationThreshold: 4.5, motorLoad: 72, powerConsumption: 39.7 },
-    ];
+    // Dynamic 24-hour sensor generator tailored per machine equipment type and status
+    function getMachineProfile(code: string, name: string, type: string, status: string) {
+      const c = (code || '').toUpperCase();
+      const n = (name || '').toLowerCase();
+      const t = (type || '').toLowerCase();
+      const isWarning = status === 'Warning';
+      const isIdle = status === 'Idle';
+      const isMaintenance = status === 'Maintenance';
+
+      if (isIdle) {
+        return {
+          baseTemp: 23.5,
+          tempVar: 0.8,
+          tempLimit: 75.0,
+          baseVib: 0.22,
+          vibVar: 0.05,
+          vibLimit: 4.5,
+          baseLoad: 0,
+          basePower: 3.2,
+          location: 'Line 1 — Standby Bay',
+        };
+      }
+
+      if (isMaintenance) {
+        return {
+          baseTemp: 21.0,
+          tempVar: 0.4,
+          tempLimit: 75.0,
+          baseVib: 0.05,
+          vibVar: 0.02,
+          vibLimit: 4.5,
+          baseLoad: 0,
+          basePower: 0.8,
+          location: 'Maintenance Workshop Bay',
+        };
+      }
+
+      // Specific known machine codes for high fidelity
+      if (c === 'MCH-OVN-001') {
+        return { baseTemp: 191.5, tempVar: 4.2, tempLimit: 220, baseVib: 1.22, vibVar: 0.25, vibLimit: 4.0, baseLoad: 86, basePower: 47.5, location: 'Line 1 — Thermal Bay A' };
+      }
+      if (c === 'MCH-OVN-002') {
+        return { baseTemp: 209.5, tempVar: 6.8, tempLimit: 220, baseVib: 4.35, vibVar: 0.55, vibLimit: 4.0, baseLoad: 92, basePower: 56.0, location: 'Line 2 — Thermal Bay B' };
+      }
+      if (c === 'OVEN-01') {
+        return { baseTemp: 187.0, tempVar: 3.5, tempLimit: 215, baseVib: 1.15, vibVar: 0.22, vibLimit: 4.0, baseLoad: 84, basePower: 44.8, location: 'Line 1 — Thermal Bay A' };
+      }
+      if (c === 'OVEN-02') {
+        return { baseTemp: 199.2, tempVar: 4.8, tempLimit: 220, baseVib: 1.38, vibVar: 0.28, vibLimit: 4.0, baseLoad: 89, basePower: 52.0, location: 'Line 2 — Thermal Bay B' };
+      }
+      if (c === 'MCH-MIX-001') {
+        return { baseTemp: 33.4, tempVar: 3.2, tempLimit: 55, baseVib: 1.95, vibVar: 0.40, vibLimit: 4.5, baseLoad: 91, basePower: 34.5, location: 'Prep Station 1 — Mixing' };
+      }
+      if (c === 'MIX-01') {
+        return { baseTemp: 28.8, tempVar: 2.6, tempLimit: 50, baseVib: 1.62, vibVar: 0.32, vibLimit: 4.5, baseLoad: 85, basePower: 31.0, location: 'Prep Station 2 — Batching' };
+      }
+      if (c === 'MCH-PKG-001') {
+        return { baseTemp: 44.2, tempVar: 3.4, tempLimit: 65, baseVib: 2.38, vibVar: 0.45, vibLimit: 4.5, baseLoad: 73, basePower: 18.8, location: 'Packaging Line 1 — Bay C' };
+      }
+      if (c === 'PACK-01') {
+        return { baseTemp: 46.8, tempVar: 3.8, tempLimit: 65, baseVib: 2.18, vibVar: 0.38, vibLimit: 4.5, baseLoad: 71, basePower: 17.5, location: 'Packaging Line 1 — Bay C' };
+      }
+      if (c === 'PACK-02') {
+        return { baseTemp: 52.4, tempVar: 4.2, tempLimit: 68, baseVib: 2.72, vibVar: 0.52, vibLimit: 4.5, baseLoad: 77, basePower: 21.2, location: 'Packaging Line 2 — Bay D' };
+      }
+      if (c === 'LINE-01') {
+        return { baseTemp: 58.2, tempVar: 4.6, tempLimit: 75, baseVib: 2.28, vibVar: 0.42, vibLimit: 4.5, baseLoad: 82, basePower: 67.5, location: 'Main Production Floor 1' };
+      }
+      if (c === 'LINE-02') {
+        return { baseTemp: 53.6, tempVar: 3.9, tempLimit: 75, baseVib: 1.88, vibVar: 0.35, vibLimit: 4.5, baseLoad: 78, basePower: 61.0, location: 'Main Production Floor 2' };
+      }
+
+      // Hash fallback based on machine code / name
+      const charSum = (c + n).split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+      const hashOffset = (charSum % 7) - 3; // -3 to +3
+
+      if (t.includes('oven') || t.includes('baking') || n.includes('oven')) {
+        return {
+          baseTemp: isWarning ? 212 : 190 + hashOffset * 3,
+          tempVar: isWarning ? 7.0 : 4.0,
+          tempLimit: 220,
+          baseVib: isWarning ? 4.6 : 1.25 + (hashOffset * 0.05),
+          vibVar: isWarning ? 0.6 : 0.25,
+          vibLimit: 4.0,
+          baseLoad: isWarning ? 94 : 85 + hashOffset,
+          basePower: 48.0 + hashOffset * 2,
+          location: 'Thermal Baking Bay',
+        };
+      }
+
+      if (t.includes('mix') || n.includes('mix')) {
+        return {
+          baseTemp: 31.0 + hashOffset * 2,
+          tempVar: 3.0,
+          tempLimit: 55,
+          baseVib: isWarning ? 4.6 : 1.8 + (hashOffset * 0.08),
+          vibVar: 0.38,
+          vibLimit: 4.5,
+          baseLoad: 88 + hashOffset,
+          basePower: 33.0 + hashOffset,
+          location: 'Dough Mixing Station',
+        };
+      }
+
+      if (t.includes('pack') || n.includes('pack')) {
+        return {
+          baseTemp: 47.0 + hashOffset * 2,
+          tempVar: 3.5,
+          tempLimit: 65,
+          baseVib: isWarning ? 4.7 : 2.3 + (hashOffset * 0.08),
+          vibVar: 0.45,
+          vibLimit: 4.5,
+          baseLoad: 74 + hashOffset,
+          basePower: 19.0 + hashOffset * 0.5,
+          location: 'Packaging Line Section',
+        };
+      }
+
+      // Default Industrial Equipment / Line
+      return {
+        baseTemp: 55.0 + hashOffset * 2,
+        tempVar: 4.0,
+        tempLimit: 75,
+        baseVib: isWarning ? 4.8 : 2.1 + (hashOffset * 0.06),
+        vibVar: 0.4,
+        vibLimit: 4.5,
+        baseLoad: 80 + hashOffset,
+        basePower: 65.0 + hashOffset * 2,
+        location: 'Production Floor Bay',
+      };
+    }
+
+    function generateMachineSensors(m: any, status: string) {
+      const profile = getMachineProfile(m.machineCode, m.machineName, m.machineType, status);
+      const hours = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
+      const seed = (m.machineCode || 'MCH').charCodeAt(0) + (Number(m.id) || 1);
+
+      return hours.map((hour, idx) => {
+        const phase = (idx + (seed % 4) * 0.5) * 0.9;
+        const wave = Math.sin(phase);
+        const cosWave = Math.cos(phase * 1.15);
+
+        const temperature = Number((profile.baseTemp + wave * profile.tempVar).toFixed(1));
+        const vibration = Number(Math.max(0.1, profile.baseVib + cosWave * profile.vibVar).toFixed(2));
+        const motorLoad = profile.baseLoad > 0 
+          ? Math.min(100, Math.max(10, Math.round(profile.baseLoad + wave * 5))) 
+          : 0;
+        const powerConsumption = profile.basePower > 0
+          ? Number(Math.max(0.5, profile.basePower + wave * (profile.basePower * 0.08)).toFixed(1))
+          : 0.5;
+
+        return {
+          machineId: m.id,
+          timestamp: hour,
+          hourLabel: hour,
+          temperature,
+          temperatureThreshold: profile.tempLimit,
+          vibration,
+          vibrationThreshold: profile.vibLimit,
+          motorLoad,
+          powerConsumption,
+        };
+      });
+    }
 
     // Assemble rich machine objects
     const enrichedMachines = machinesRes.rows.map((m: any) => {
@@ -125,19 +280,25 @@ export async function GET() {
       const riskLevel = machinePred?.riskLevel || (normalizedStatus === 'Warning' ? 'High' : normalizedStatus === 'Maintenance' ? 'Critical' : 'Low');
       const riskScore = machinePred ? Number(machinePred.riskScore) : (normalizedStatus === 'Warning' ? 82.0 : normalizedStatus === 'Maintenance' ? 94.0 : 18.5);
 
+      const generatedSensors = generateMachineSensors(m, normalizedStatus);
+      const finalSensors = machineSensors.length >= 4 ? machineSensors : generatedSensors;
+      const latestReading = finalSensors[finalSensors.length - 1];
+      const profile = getMachineProfile(m.machineCode, m.machineName, m.machineType, normalizedStatus);
+
       return {
         ...m,
         status: normalizedStatus,
+        location: profile.location,
         riskLevel,
         riskScore,
         operatingHours: Number(m.operatingHours) || 0,
         downtimeMinutes: Number(m.downtimeMinutes) || (normalizedStatus === 'Warning' ? 45 : normalizedStatus === 'Maintenance' ? 120 : 0),
-        utilization: Number(m.utilization) || (normalizedStatus === 'Running' ? 92.5 : normalizedStatus === 'Warning' ? 74.0 : normalizedStatus === 'Idle' ? 0.0 : 0.0),
-        currentTemperature: Number(m.currentTemperature) || (normalizedStatus === 'Warning' ? 86.4 : 72.5),
-        currentVibration: Number(m.currentVibration) || (normalizedStatus === 'Warning' ? 4.82 : 2.4),
-        currentMotorLoad: Number(m.currentMotorLoad) || (normalizedStatus === 'Running' ? 84.0 : 0),
-        currentPower: Number(m.currentPower) || (normalizedStatus === 'Running' ? 42.0 : 0),
-        sensorHistory: machineSensors.length >= 3 ? machineSensors : defaultSensorPoints,
+        utilization: Number(m.utilization) || (normalizedStatus === 'Running' ? 92.5 : normalizedStatus === 'Warning' ? 74.0 : 0.0),
+        currentTemperature: latestReading.temperature,
+        currentVibration: latestReading.vibration,
+        currentMotorLoad: latestReading.motorLoad,
+        currentPower: latestReading.powerConsumption,
+        sensorHistory: finalSensors,
         maintenanceHistory: machineMnt,
         prediction: machinePred ? {
           ...machinePred,

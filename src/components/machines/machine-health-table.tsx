@@ -73,8 +73,10 @@ export function MachineHealthTable({
           </thead>
           <tbody className="divide-y divide-slate-800/60">
             {machines.map((machine) => {
-              const isHighTemp = machine.currentTemperature > 100 || (machine.currentTemperature > 80 && machine.machineCode === "MCH-004");
-              const isHighVib = machine.currentVibration > 3.0;
+              const tempLimit = machine.sensorHistory?.[0]?.temperatureThreshold ?? 85;
+              const vibLimit = machine.sensorHistory?.[0]?.vibrationThreshold ?? 4.0;
+              const isHighTemp = machine.currentTemperature >= tempLimit || machine.status === "Warning";
+              const isHighVib = machine.currentVibration >= vibLimit || (machine.status === "Warning" && machine.currentVibration > 3.5);
 
               return (
                 <tr
