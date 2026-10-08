@@ -12,7 +12,7 @@ import {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen relative flex flex-col justify-between text-slate-900 selection:bg-cyan-500 selection:text-white overflow-x-hidden">
+    <div className="min-h-screen relative flex flex-col justify-between text-white selection:bg-cyan-500 selection:text-white overflow-x-hidden">
       {/* Background Video (Continuous Loop) */}
       <div className="fixed inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
         <video
@@ -62,21 +62,27 @@ export default function LoginPage() {
       {/* Main Content Body */}
       <main className="relative z-10 flex-1 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Column: Hero & Value Proposition in Crisp White */}
-          <div className="hidden lg:flex lg:col-span-6 flex-col justify-center space-y-6 pr-4">
+          {/* Left Column: Hero & Value Proposition in Guaranteed Pure White */}
+          <div className="hidden lg:flex lg:col-span-6 flex-col justify-center space-y-6 pr-4 text-white">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/80 text-xs font-semibold text-cyan-300 shadow-sm w-fit">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               Next-Gen Factory Intelligence
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight drop-shadow-md">
+            <h1
+              style={{ color: "#ffffff" }}
+              className="text-4xl sm:text-5xl font-extrabold tracking-tight !text-white leading-tight drop-shadow-lg"
+            >
               Intelligent Production &{" "}
-              <span className="text-white drop-shadow-lg">
+              <span style={{ color: "#ffffff" }} className="!text-white">
                 Autonomous ERP
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-white font-medium leading-relaxed max-w-lg drop-shadow-sm">
+            <p
+              style={{ color: "#ffffff" }}
+              className="text-base sm:text-lg !text-white font-medium leading-relaxed max-w-lg drop-shadow-md"
+            >
               Synchronize shop floor work orders, warehouse inventory, predictive machine
               maintenance, and quality control with unified role-based governance.
             </p>
