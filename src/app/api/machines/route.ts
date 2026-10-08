@@ -226,8 +226,8 @@ export async function GET() {
 
         const temperature = Number((profile.baseTemp + wave * profile.tempVar).toFixed(1));
         const vibration = Number(Math.max(0.1, profile.baseVib + cosWave * profile.vibVar).toFixed(2));
-        const motorLoad = profile.baseLoad > 0 
-          ? Math.min(100, Math.max(10, Math.round(profile.baseLoad + wave * 5))) 
+        const motorLoad = profile.baseLoad > 0
+          ? Math.min(100, Math.max(10, Math.round(profile.baseLoad + wave * 5)))
           : 0;
         const powerConsumption = profile.basePower > 0
           ? Number(Math.max(0.5, profile.basePower + wave * (profile.basePower * 0.08)).toFixed(1))
@@ -267,7 +267,7 @@ export async function GET() {
       const rawStatus = (m.status || 'Running').trim();
       let normalizedStatus: 'Running' | 'Idle' | 'Maintenance' | 'Warning' = 'Running';
       const sLower = rawStatus.toLowerCase();
-      
+
       // Known defective / warning equipment for rich simulation
       if (m.machineCode === 'MCH-OVN-002' || m.machineCode === 'PACK-02' || m.machineCode === 'LINE-01') {
         normalizedStatus = 'Warning';
