@@ -12,7 +12,7 @@ import {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen relative flex flex-col justify-between text-slate-900 selection:bg-cyan-100 selection:text-cyan-900 overflow-x-hidden">
+    <div className="min-h-screen relative flex flex-col justify-between text-slate-900 selection:bg-cyan-500 selection:text-white overflow-x-hidden">
       {/* Background Video (Continuous Loop) */}
       <div className="fixed inset-0 w-full h-full overflow-hidden z-0 pointer-events-none">
         <video
@@ -28,32 +28,34 @@ export default function LoginPage() {
             type="video/mp4"
           />
         </video>
-        {/* Ultra-light ambient tint to ensure video is fully clear and vibrant */}
-        <div className="absolute inset-0 bg-black/15" />
+        {/* Ambient base tint */}
+        <div className="absolute inset-0 bg-black/20" />
+        {/* Right side black gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/40 via-45% to-black/85" />
       </div>
 
       {/* Top Navbar Header */}
-      <header className="relative z-10 border-b border-slate-200/60 bg-white/75 backdrop-blur-md">
+      <header className="relative z-10 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-600/20">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
               <Cpu className="w-5 h-5 text-white" />
             </div>
             <div>
-              <span className="text-base font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+              <span className="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
                 Smart Manufacturing ERP
-                <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-cyan-50 text-cyan-800 border border-cyan-200">
+                <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
                   AI v1.0
                 </span>
               </span>
-              <p className="text-[11px] text-slate-500">Enterprise Operations Platform</p>
+              <p className="text-[11px] text-slate-400">Enterprise Operations Platform</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-slate-500">
+          <div className="flex items-center gap-3 text-xs text-slate-400">
             <div className="hidden md:flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-medium text-slate-700">Core Engine Online</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-medium text-slate-200">Core Engine Online</span>
             </div>
           </div>
         </div>
@@ -62,76 +64,76 @@ export default function LoginPage() {
       {/* Main Content Body */}
       <main className="relative z-10 flex-1 flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Column: Hero & Value Proposition */}
+          {/* Left Column: Hero & Value Proposition in Crisp White */}
           <div className="hidden lg:flex lg:col-span-6 flex-col justify-center space-y-6 pr-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs font-semibold text-cyan-700 shadow-xs w-fit">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-slate-700/80 text-xs font-semibold text-cyan-300 shadow-sm w-fit">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               Next-Gen Factory Intelligence
             </div>
 
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight drop-shadow-md">
               Intelligent Production &{" "}
-              <span className="bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="text-white drop-shadow-lg">
                 Autonomous ERP
               </span>
             </h1>
 
-            <p className="text-base text-slate-600 leading-relaxed max-w-lg">
+            <p className="text-base sm:text-lg text-white font-medium leading-relaxed max-w-lg drop-shadow-sm">
               Synchronize shop floor work orders, warehouse inventory, predictive machine
               maintenance, and quality control with unified role-based governance.
             </p>
 
             {/* Feature Highlights */}
             <div className="grid grid-cols-2 gap-3 pt-2 max-w-lg">
-              <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                <div className="flex items-center gap-2 text-cyan-700 font-semibold text-xs mb-1">
-                  <Activity className="w-4 h-4 text-cyan-600" />
+              <div className="p-3.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/80 shadow-md">
+                <div className="flex items-center gap-2 text-cyan-300 font-bold text-xs mb-1">
+                  <Activity className="w-4 h-4 text-cyan-400" />
                   <span>Real-time Shopfloor</span>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-300 font-medium">
                   Track batch progression and operator capacities seamlessly.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                <div className="flex items-center gap-2 text-blue-700 font-semibold text-xs mb-1">
-                  <Layers className="w-4 h-4 text-blue-600" />
+              <div className="p-3.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/80 shadow-md">
+                <div className="flex items-center gap-2 text-sky-300 font-bold text-xs mb-1">
+                  <Layers className="w-4 h-4 text-sky-400" />
                   <span>Unified Inventory</span>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-300 font-medium">
                   Automated BOM tracking & raw material depletion checks.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                <div className="flex items-center gap-2 text-purple-700 font-semibold text-xs mb-1">
-                  <Bot className="w-4 h-4 text-purple-600" />
+              <div className="p-3.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/80 shadow-md">
+                <div className="flex items-center gap-2 text-purple-300 font-bold text-xs mb-1">
+                  <Bot className="w-4 h-4 text-purple-400" />
                   <span>AI Predictive Insights</span>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-300 font-medium">
                   Pre-emptive maintenance alerts and yield optimization.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
-                <div className="flex items-center gap-2 text-emerald-700 font-semibold text-xs mb-1">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <div className="p-3.5 rounded-xl bg-slate-900/80 backdrop-blur-md border border-slate-700/80 shadow-md">
+                <div className="flex items-center gap-2 text-emerald-300 font-bold text-xs mb-1">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
                   <span>Role-Based Security</span>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-slate-300 font-medium">
                   Multi-tier access for 9 specialized factory departments.
                 </p>
               </div>
             </div>
 
             {/* System Status pill */}
-            <div className="flex items-center gap-3 pt-2 text-xs text-slate-500">
-              <div className="flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-cyan-600" />
+            <div className="flex items-center gap-3 pt-2 text-xs text-slate-300 font-medium">
+              <div className="flex items-center gap-1.5 text-cyan-300">
+                <Zap className="w-4 h-4 text-cyan-400" />
                 <span>Next.js App Router Architecture</span>
               </div>
               <span>•</span>
-              <span>Live System Connection</span>
+              <span className="text-white">Live System Connection</span>
             </div>
           </div>
 
