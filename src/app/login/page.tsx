@@ -134,11 +134,6 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-slate-200 py-4 text-center text-xs text-slate-500 bg-white/60">
-        <p>© 2026 AI-Powered Smart Manufacturing ERP. Enterprise Operations Platform.</p>
-      </footer>
     </div>
   );
 }
