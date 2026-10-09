@@ -9,15 +9,18 @@ export const pool =
   globalForPg.pgPool ||
   new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 20, // Maximum active connections
-    idleTimeoutMillis: 30000, // Close idle clients after 30s
-    connectionTimeoutMillis: 5000, // Timeout after 5s if unable to connect
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    max: 10, // Max active connections
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+    ssl:
+      process.env.NODE_ENV === 'production' && !process.env.DATABASE_URL?.includes('localhost')
+        ? { rejectUnauthorized: false }
+        : false,
   });
 
 // Handle idle connection errors gracefully without crashing the Node process
 pool.on('error', (err: any) => {
-  console.warn('PostgreSQL idle client encountered error (will automatically reconnect):', err.message);
+  console.warn('PostgreSQL pool error (will reconnect):', err.message);
 });
 
 if (process.env.NODE_ENV !== 'production') {
@@ -25,6 +28,9 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 export async function query(text: string, params?: any[]) {
+  if (!process.env.DATABASE_URL) {
+    console.warn('DATABASE_URL is not set in environment variables.');
+  }
   const start = Date.now();
   const res = await pool.query(text, params);
   const duration = Date.now() - start;
