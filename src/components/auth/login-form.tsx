@@ -3,27 +3,16 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
-import { DEMO_USERS } from "@/lib/mock-data/users";
 import {
   Eye,
   EyeOff,
   Lock,
   Mail,
-  ShieldCheck,
   AlertCircle,
   Loader2,
   Cpu,
   KeyRound,
-  CheckCircle2,
-  Factory,
-  Boxes,
-  ShieldAlert,
   Sparkles,
-  Building2,
-  Wrench,
-  Truck,
-  Users,
-  IndianRupee,
 } from "lucide-react";
 
 export function LoginForm() {
@@ -36,7 +25,6 @@ export function LoginForm() {
   const [email, setEmail] = useState<string>("admin@factory.com");
   const [password, setPassword] = useState<string>("Admin@123");
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showForgotModal, setShowForgotModal] = useState<boolean>(false);
@@ -56,7 +44,7 @@ export function LoginForm() {
 
     setIsSubmitting(true);
     try {
-      const result = await login({ email, password, rememberMe });
+      const result = await login({ email, password, rememberMe: true });
       if (result.success) {
         router.push(redirectUrl);
       } else {
@@ -66,37 +54,6 @@ export function LoginForm() {
       setErrorMessage("An unexpected error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleSelectDemo = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setErrorMessage(null);
-  };
-
-  const getRoleIcon = (roleName: string) => {
-    switch (roleName) {
-      case "Admin":
-        return <ShieldAlert className="w-3.5 h-3.5 text-rose-400" />;
-      case "Factory Manager":
-        return <Building2 className="w-3.5 h-3.5 text-amber-400" />;
-      case "Production Manager":
-        return <Factory className="w-3.5 h-3.5 text-blue-400" />;
-      case "Inventory Manager":
-        return <Boxes className="w-3.5 h-3.5 text-emerald-400" />;
-      case "Maintenance Manager":
-        return <Wrench className="w-3.5 h-3.5 text-orange-400" />;
-      case "Quality Manager":
-        return <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />;
-      case "Procurement Manager":
-        return <Truck className="w-3.5 h-3.5 text-cyan-400" />;
-      case "HR Manager":
-        return <Users className="w-3.5 h-3.5 text-indigo-400" />;
-      case "Finance Manager":
-        return <IndianRupee className="w-3.5 h-3.5 text-teal-400" />;
-      default:
-        return <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />;
     }
   };
 
@@ -204,27 +161,11 @@ export function LoginForm() {
             </div>
           </div>
 
-          {/* Remember me */}
-          <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 bg-white text-cyan-600 focus:ring-cyan-500/20 cursor-pointer"
-              />
-              <span className="text-xs text-slate-600 group-hover:text-slate-800 select-none transition">
-                Keep me signed in for 30 days
-              </span>
-            </label>
-          </div>
-
           {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting || authLoading}
-            className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold text-sm shadow-md shadow-cyan-600/20 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold text-sm shadow-md shadow-cyan-600/20 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {isSubmitting || authLoading ? (
               <>
@@ -239,44 +180,6 @@ export function LoginForm() {
             )}
           </button>
         </form>
-
-        {/* Demo Accounts Section */}
-        <div className="mt-6 pt-5 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-bold tracking-wider uppercase text-slate-500">
-              ⚡ 1-Click Demo Accounts
-            </span>
-            <span className="text-[11px] text-cyan-700 font-mono font-medium">Auto-Fill</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {DEMO_USERS.map((demo) => {
-              const isSelected = email === demo.email;
-              return (
-                <button
-                  key={demo.email}
-                  type="button"
-                  onClick={() => handleSelectDemo(demo.email, demo.password)}
-                  className={`flex flex-col items-start p-2 sm:p-2.5 rounded-lg border text-left transition ${
-                    isSelected
-                      ? "bg-cyan-50 border-cyan-500 ring-2 ring-cyan-500/20 shadow-xs"
-                      : "bg-slate-50 border-slate-200 hover:border-slate-300 hover:bg-slate-100/80"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 w-full">
-                    {getRoleIcon(demo.user.role)}
-                    <span className="text-[11px] sm:text-xs font-semibold text-slate-800 truncate">
-                      {demo.user.role.replace(" Manager", "")}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-slate-500 font-mono truncate w-full mt-0.5">
-                    {demo.email.split("@")[0]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
       {/* Forgot Password Modal Placeholder */}
