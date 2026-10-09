@@ -1,4 +1,4 @@
-import { Pool } = require('pg');
+const { Pool } = require('pg');
 require('dotenv').config({ path: '.env.local' });
 
 // We test using our compiled / dynamic TS runner or node
