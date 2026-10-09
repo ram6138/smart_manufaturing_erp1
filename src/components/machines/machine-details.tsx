@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MachineItem, MaintenanceRecord } from "@/types/machines";
 import { MachineStatusBadge } from "./risk-indicator";
 import { RiskIndicator } from "./risk-indicator";
@@ -48,6 +48,19 @@ export function MachineDetails({
   onScheduleMaintenance,
 }: MachineDetailsProps) {
   const [activeTab, setActiveTab] = useState<"overview" | "sensors" | "history">("overview");
+  const modalBodyRef = useRef<HTMLDivElement>(null);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   if (!isOpen || !machine) return null;
 
@@ -64,27 +77,27 @@ export function MachineDetails({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/85 overflow-y-auto">
-      <div className="relative w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70">
+      <div className="relative w-full max-w-5xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header Bar */}
-        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-800 bg-slate-900/90 shrink-0">
+        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shrink-0">
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+            <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 dark:bg-cyan-500/10 dark:border-cyan-500/20 text-blue-600 dark:text-cyan-400">
               <Cpu className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                   {machine.machineName}
                 </h2>
-                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 border border-cyan-800/50">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-cyan-950/80 dark:text-cyan-300 dark:border-cyan-800/50 font-bold">
                   {machine.machineCode}
                 </span>
                 <MachineStatusBadge status={machine.status} />
               </div>
-              <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-3 mt-1">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex items-center gap-3 mt-1">
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
                   {machine.location}
                 </span>
                 <span>•</span>
@@ -96,14 +109,15 @@ export function MachineDetails({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onScheduleMaintenance(machine.id)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors shadow-sm"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 transition-colors shadow-sm cursor-pointer"
             >
               <Wrench className="w-3.5 h-3.5" />
               <span>Schedule MNT</span>
             </button>
             <button
+              type="button"
               onClick={onClose}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -111,13 +125,13 @@ export function MachineDetails({
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-2 px-6 pt-3 border-b border-slate-800 bg-slate-950/40 shrink-0">
+        <div className="flex items-center gap-2 px-6 pt-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 shrink-0">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "overview"
-                ? "border-cyan-400 text-cyan-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-blue-600 text-blue-600 dark:border-cyan-400 dark:text-cyan-300"
+                : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
             <Gauge className="w-3.5 h-3.5" />
@@ -125,10 +139,10 @@ export function MachineDetails({
           </button>
           <button
             onClick={() => setActiveTab("sensors")}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "sensors"
-                ? "border-cyan-400 text-cyan-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-blue-600 text-blue-600 dark:border-cyan-400 dark:text-cyan-300"
+                : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
@@ -136,10 +150,10 @@ export function MachineDetails({
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all flex items-center gap-1.5 ${
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "history"
-                ? "border-cyan-400 text-cyan-300"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "border-blue-600 text-blue-600 dark:border-cyan-400 dark:text-cyan-300"
+                : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
             <History className="w-3.5 h-3.5" />
@@ -148,7 +162,7 @@ export function MachineDetails({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+        <div ref={modalBodyRef} className="p-6 overflow-y-auto overscroll-contain space-y-6 flex-1 min-h-0">
           {activeTab === "overview" && (
             <>
               {/* Machine Specs Grid */}
@@ -533,13 +547,11 @@ export function MachineDetails({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500 shrink-0">
-          <span>
-            Database schema target: <code className="text-cyan-400">machines</code> & <code className="text-cyan-400">machine_sensor_readings</code>
-          </span>
+        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end text-xs text-slate-500 shrink-0">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors"
+            className="px-5 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-colors cursor-pointer"
           >
             Close Details
           </button>
