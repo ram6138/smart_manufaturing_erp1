@@ -294,9 +294,30 @@ export default function QualityPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
+  const [activeKpiCard, setActiveKpiCard] = useState<string | undefined>(undefined);
+
+  const handleKpiCardClick = (cardKey: "total_inspections" | "passed_inspections" | "failed_inspections" | "pass_rate" | "total_defects" | "open_defects") => {
+    setActiveKpiCard(cardKey);
+
+    if (cardKey === "total_inspections") {
+      setFilters((prev) => ({ ...prev, status: "all" }));
+      document.getElementById("inspections-table-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (cardKey === "passed_inspections") {
+      setFilters((prev) => ({ ...prev, status: "Passed" }));
+      document.getElementById("inspections-table-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (cardKey === "failed_inspections") {
+      setFilters((prev) => ({ ...prev, status: "Failed" }));
+      document.getElementById("inspections-table-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (cardKey === "pass_rate") {
+      document.getElementById("quality-charts-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (cardKey === "total_defects" || cardKey === "open_defects") {
+      document.getElementById("defects-table-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   const handleFilterByProduct = (productName: string) => {
     setFilters((prev) => ({ ...prev, product: productName }));
-    window.scrollTo({ top: 800, behavior: "smooth" });
+    document.getElementById("inspections-table-section")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleRefresh = () => {
@@ -323,14 +344,14 @@ export default function QualityPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
                 Quality Control
               </h1>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 AQL & SPC Active
               </span>
             </div>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-slate-500 mt-1">
               Monitor product quality, defects, inspections and quality risks.
             </p>
           </div>
@@ -340,25 +361,30 @@ export default function QualityPage() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white text-xs font-medium transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 text-xs font-medium transition-all shadow-xs cursor-pointer"
               title="Refresh quality metrics"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isRefreshing ? "animate-spin" : ""}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-cyan-600 ${isRefreshing ? "animate-spin" : ""}`} />
               <span>{isRefreshing ? "Syncing..." : "Sync QA Data"}</span>
             </button>
 
             <button
               onClick={() => setIsNewInspectionModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20 active:scale-95 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 text-white" />
               <span>+ New Inspection</span>
             </button>
           </div>
         </div>
 
-        {/* 1. QUALITY KPI CARDS */}
-        <QualityKpiCards inspections={inspections} defects={defects} />
+        {/* 1. QUALITY KPI CARDS (Clickable Navigation) */}
+        <QualityKpiCards 
+          inspections={inspections} 
+          defects={defects} 
+          onCardClick={handleKpiCardClick}
+          activeCard={activeKpiCard}
+        />
 
         {/* 2. QUALITY OVERVIEW & OVERALL QUALITY SCORE */}
         <QualityScore inspections={inspections} defects={defects} />
@@ -370,7 +396,7 @@ export default function QualityPage() {
         />
 
         {/* 4. QUALITY CHARTS SECTION: Quality Trend & Defect Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div id="quality-charts-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6 scroll-mt-24">
           <div className="lg:col-span-7">
             <QualityTrendChart data={QUALITY_TREND_30_DAYS} />
           </div>
@@ -383,43 +409,47 @@ export default function QualityPage() {
         <ProductComparisonChart data={PRODUCT_QUALITY_BENCHMARKS} />
 
         {/* 6. QUALITY FILTERS */}
-        <QualityFilters
-          filters={filters}
-          onFilterChange={(newFilters) => setFilters((prev) => ({ ...prev, ...newFilters }))}
-          onResetFilters={() =>
-            setFilters({
-              searchQuery: "",
-              product: "all",
-              status: "all",
-              defectType: "all",
-              dateRange: "all",
-            })
-          }
-          totalInspections={inspections.length}
-          filteredCount={filteredInspections.length}
-        />
+        <div id="inspections-table-section" className="scroll-mt-24 space-y-6">
+          <QualityFilters
+            filters={filters}
+            onFilterChange={(newFilters) => setFilters((prev) => ({ ...prev, ...newFilters }))}
+            onResetFilters={() =>
+              setFilters({
+                searchQuery: "",
+                product: "all",
+                status: "all",
+                defectType: "all",
+                dateRange: "all",
+              })
+            }
+            totalInspections={inspections.length}
+            filteredCount={filteredInspections.length}
+          />
 
-        {/* 7. RECENT QUALITY INSPECTION TABLE */}
-        <InspectionTable
-          inspections={filteredInspections}
-          onViewInspection={handleOpenInspectionDetails}
-        />
+          {/* 7. RECENT QUALITY INSPECTION TABLE */}
+          <InspectionTable
+            inspections={filteredInspections}
+            onViewInspection={handleOpenInspectionDetails}
+          />
+        </div>
 
         {/* 8. QUALITY DEFECT TABLE */}
-        <DefectTable
-          defects={defects}
-          onViewDefect={(def) => {
-            const parentInsp = inspections.find((i) => i.id === def.inspectionId);
-            if (parentInsp) {
-              handleOpenInspectionDetails(parentInsp);
-            } else {
-              handleOpenUpdateDefect(def);
-            }
-          }}
-          onInvestigateDefect={handleInvestigateDefect}
-          onResolveDefect={handleResolveDefect}
-          onUpdateIssueModal={handleOpenUpdateDefect}
-        />
+        <div id="defects-table-section" className="scroll-mt-24">
+          <DefectTable
+            defects={defects}
+            onViewDefect={(def) => {
+              const parentInsp = inspections.find((i) => i.id === def.inspectionId);
+              if (parentInsp) {
+                handleOpenInspectionDetails(parentInsp);
+              } else {
+                handleOpenUpdateDefect(def);
+              }
+            }}
+            onInvestigateDefect={handleInvestigateDefect}
+            onResolveDefect={handleResolveDefect}
+            onUpdateIssueModal={handleOpenUpdateDefect}
+          />
+        </div>
 
         {/* MODALS */}
         <InspectionDetails
