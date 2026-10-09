@@ -74,7 +74,7 @@ export const DEMO_USERS: DemoAccount[] = [
     password: "Admin@123",
     user: {
       id: "usr_admin_001",
-      name: "Alex Vance",
+      name: "Raju",
       email: "admin@factory.com",
       role: "Admin",
       department: "Executive Management",
