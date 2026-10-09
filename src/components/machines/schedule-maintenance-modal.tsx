@@ -102,6 +102,33 @@ export function ScheduleMaintenanceModal({
     }, 400);
   };
 
+  // Mouse wheel increment / decrement handlers
+  const handleHoursWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const current = parseFloat(estimatedHours) || 0;
+    const step = 0.5;
+    if (e.deltaY < 0) {
+      const next = Math.min(48, Number((current + step).toFixed(1)));
+      setEstimatedHours(String(next));
+    } else {
+      const next = Math.max(0.5, Number((current - step).toFixed(1)));
+      setEstimatedHours(String(next));
+    }
+  };
+
+  const handleCostWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const current = parseFloat(estimatedCost) || 0;
+    const step = 25;
+    if (e.deltaY < 0) {
+      const next = current + step;
+      setEstimatedCost(String(next));
+    } else {
+      const next = Math.max(0, current - step);
+      setEstimatedCost(String(next));
+    }
+  };
+
   const selectedMachine = machines.find((m) => m.id === selectedMachineId);
 
   return (
@@ -248,6 +275,8 @@ export function ScheduleMaintenanceModal({
                   placeholder="e.g. 2.0"
                   value={estimatedHours}
                   onChange={(e) => setEstimatedHours(e.target.value)}
+                  onWheel={handleHoursWheel}
+                  title="Scroll mouse wheel up/down to increment/decrement hours"
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
                 />
                 <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -266,6 +295,8 @@ export function ScheduleMaintenanceModal({
                   placeholder="e.g. 250"
                   value={estimatedCost}
                   onChange={(e) => setEstimatedCost(e.target.value)}
+                  onWheel={handleCostWheel}
+                  title="Scroll mouse wheel up/down to increment/decrement cost"
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
                 />
                 <IndianRupee className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
