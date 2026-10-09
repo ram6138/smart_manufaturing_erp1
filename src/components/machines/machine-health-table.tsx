@@ -58,23 +58,23 @@ export function MachineHealthTable({
       </div>
 
       {/* Desktop & Tablet Table */}
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden md:block max-h-[520px] overflow-y-auto overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
         <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
-              <th className="pb-3 font-semibold">Machine</th>
-              <th className="pb-3 font-semibold">Status</th>
-              <th className="pb-3 font-semibold text-right">Temperature</th>
-              <th className="pb-3 font-semibold text-right">Vibration</th>
-              <th className="pb-3 font-semibold text-right">Operating Hrs</th>
-              <th className="pb-3 font-semibold text-right">Downtime</th>
-              <th className="pb-3 font-semibold text-center">Last Maint.</th>
-              <th className="pb-3 font-semibold text-center">Next Maint.</th>
-              <th className="pb-3 font-semibold text-center">Risk Level</th>
-              <th className="pb-3 font-semibold text-right">Actions</th>
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+              <th className="py-3 px-3 font-semibold">Machine</th>
+              <th className="py-3 px-3 font-semibold">Status</th>
+              <th className="py-3 px-3 font-semibold text-right">Temperature</th>
+              <th className="py-3 px-3 font-semibold text-right">Vibration</th>
+              <th className="py-3 px-3 font-semibold text-right">Operating Hrs</th>
+              <th className="py-3 px-3 font-semibold text-right">Downtime</th>
+              <th className="py-3 px-3 font-semibold text-center">Last Maint.</th>
+              <th className="py-3 px-3 font-semibold text-center">Next Maint.</th>
+              <th className="py-3 px-3 font-semibold text-center">Risk Level</th>
+              <th className="py-3 px-3 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-slate-200">
             {machines.map((machine) => {
               const tempLimit = machine.sensorHistory?.[0]?.temperatureThreshold ?? 85;
               const vibLimit = machine.sensorHistory?.[0]?.vibrationThreshold ?? 4.0;

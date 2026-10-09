@@ -86,21 +86,21 @@ export function InventoryTransactions({ transactions }: InventoryTransactionsPro
       </div>
 
       {/* Transactions Table */}
-      <div className="overflow-x-auto">
+      <div className="max-h-[520px] overflow-y-auto overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
         <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
-              <th className="pb-3 font-semibold">Transaction ID</th>
-              <th className="pb-3 font-semibold">Date & Time</th>
-              <th className="pb-3 font-semibold">Material Item</th>
-              <th className="pb-3 font-semibold">Warehouse</th>
-              <th className="pb-3 font-semibold text-center">Type</th>
-              <th className="pb-3 font-semibold text-right">Quantity</th>
-              <th className="pb-3 font-semibold">Reference</th>
-              <th className="pb-3 font-semibold">Notes / User</th>
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+              <th className="py-3 px-3 font-semibold">Transaction ID</th>
+              <th className="py-3 px-3 font-semibold">Date & Time</th>
+              <th className="py-3 px-3 font-semibold">Material Item</th>
+              <th className="py-3 px-3 font-semibold">Warehouse</th>
+              <th className="py-3 px-3 font-semibold text-center">Type</th>
+              <th className="py-3 px-3 font-semibold text-right">Quantity</th>
+              <th className="py-3 px-3 font-semibold">Reference</th>
+              <th className="py-3 px-3 font-semibold">Notes / User</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-slate-200">
             {transactions.map((trx) => {
               const isPositive = trx.quantity > 0;
 

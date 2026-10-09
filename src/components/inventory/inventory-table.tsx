@@ -60,22 +60,22 @@ export function InventoryTable({
       </div>
 
       {/* Desktop & Tablet Table */}
-      <div className="hidden md:block overflow-x-auto">
+      <div className="hidden md:block max-h-[520px] overflow-y-auto overflow-x-auto custom-scrollbar border border-slate-200 rounded-xl">
         <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
-              <th className="pb-3 font-semibold">Item Code & Name</th>
-              <th className="pb-3 font-semibold">Category</th>
-              <th className="pb-3 font-semibold">Warehouse</th>
-              <th className="pb-3 font-semibold text-right">Available Stock</th>
-              <th className="pb-3 font-semibold text-right">Reorder Lvl</th>
-              <th className="pb-3 font-semibold text-right">Unit Cost</th>
-              <th className="pb-3 font-semibold text-right">Stock Value</th>
-              <th className="pb-3 font-semibold text-center">Status</th>
-              <th className="pb-3 font-semibold text-right">Actions</th>
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+              <th className="py-3 px-3 font-semibold">Item Code & Name</th>
+              <th className="py-3 px-3 font-semibold">Category</th>
+              <th className="py-3 px-3 font-semibold">Warehouse</th>
+              <th className="py-3 px-3 font-semibold text-right">Available Stock</th>
+              <th className="py-3 px-3 font-semibold text-right">Reorder Lvl</th>
+              <th className="py-3 px-3 font-semibold text-right">Unit Cost</th>
+              <th className="py-3 px-3 font-semibold text-right">Stock Value</th>
+              <th className="py-3 px-3 font-semibold text-center">Status</th>
+              <th className="py-3 px-3 font-semibold text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60">
+          <tbody className="divide-y divide-slate-200">
             {items.map((item) => (
               <tr
                 key={item.id}

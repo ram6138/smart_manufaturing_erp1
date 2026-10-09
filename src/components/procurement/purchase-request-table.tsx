@@ -151,10 +151,10 @@ export function PurchaseRequestTable({
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden xl:block overflow-x-auto rounded-xl border border-slate-800">
+      <div className="hidden xl:block max-h-[520px] overflow-y-auto overflow-x-auto custom-scrollbar rounded-xl border border-slate-200">
         <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="bg-slate-950/90 border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[10px]">
               <th className="py-3.5 px-4">Request ID</th>
               <th className="py-3.5 px-4">Requested By</th>
               <th className="py-3.5 px-4">Department</th>
@@ -167,7 +167,7 @@ export function PurchaseRequestTable({
               <th className="py-3.5 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 text-slate-300">
+          <tbody className="divide-y divide-slate-200">
             {requests.map((r) => (
               <tr key={r.id} className="hover:bg-slate-800/40 transition-colors">
                 <td className="py-3.5 px-4 font-mono font-bold text-cyan-400 whitespace-nowrap">

@@ -185,7 +185,7 @@ export function ProcurementAlerts({
       )}
 
       {/* Alerts List */}
-      <div className="space-y-3">
+      <div className="max-h-[520px] overflow-y-auto pr-1.5 custom-scrollbar space-y-3">
         {alerts.map((alert, idx) => {
           const config = getSeverityBadge(alert.severity);
           const Icon = config.icon;

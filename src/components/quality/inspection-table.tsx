@@ -102,10 +102,10 @@ export function InspectionTable({
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden lg:block overflow-x-auto rounded-xl border border-slate-800">
+      <div className="hidden lg:block max-h-[520px] overflow-y-auto overflow-x-auto custom-scrollbar rounded-xl border border-slate-200">
         <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="bg-slate-950/90 border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs">
+            <tr className="border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-[10px]">
               <th className="py-3.5 px-4">Inspection #</th>
               <th className="py-3.5 px-4">Production Order</th>
               <th className="py-3.5 px-4">Product</th>
@@ -119,7 +119,7 @@ export function InspectionTable({
               <th className="py-3.5 px-4 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 text-slate-300">
+          <tbody className="divide-y divide-slate-200 text-slate-700">
             {inspections.map((item) => (
               <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
                 <td className="py-3.5 px-4 font-mono font-bold text-cyan-400">
