@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MachineItem, MaintenanceRecord } from "@/types/machines";
 import { MachineStatusBadge } from "./risk-indicator";
+import { MachineStatusDropdown } from "./machine-status-dropdown";
 import { RiskIndicator } from "./risk-indicator";
 import {
   X,
@@ -39,6 +40,7 @@ interface MachineDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   onScheduleMaintenance: (machineId: string) => void;
+  onUpdateStatus?: (machineId: string, newStatus: "Running" | "Idle" | "Maintenance" | "Warning") => void;
 }
 
 export function MachineDetails({
@@ -46,6 +48,7 @@ export function MachineDetails({
   isOpen,
   onClose,
   onScheduleMaintenance,
+  onUpdateStatus,
 }: MachineDetailsProps) {
   const [activeTab, setActiveTab] = useState<"overview" | "sensors" | "history">("overview");
   const modalBodyRef = useRef<HTMLDivElement>(null);
@@ -119,7 +122,15 @@ export function MachineDetails({
                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#78350f] text-amber-100 font-bold border border-amber-900/40 shadow-xs">
                   {machine.machineType}
                 </span>
-                <MachineStatusBadge status={machine.status} />
+                {onUpdateStatus ? (
+                  <MachineStatusDropdown
+                    machineId={machine.id}
+                    status={machine.status}
+                    onStatusChange={onUpdateStatus}
+                  />
+                ) : (
+                  <MachineStatusBadge status={machine.status} />
+                )}
               </div>
               <p className="text-xs text-slate-500 flex items-center gap-2 mt-1">
                 <span className="font-mono">ID: {machine.machineCode}</span>

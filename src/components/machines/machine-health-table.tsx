@@ -3,6 +3,7 @@
 import React from "react";
 import { MachineItem } from "@/types/machines";
 import { MachineStatusBadge, RiskIndicator } from "./risk-indicator";
+import { MachineStatusDropdown } from "./machine-status-dropdown";
 import {
   Eye,
   Wrench,
@@ -17,12 +18,14 @@ interface MachineHealthTableProps {
   machines: MachineItem[];
   onViewMachine: (machine: MachineItem) => void;
   onScheduleMaintenance: (machine: MachineItem) => void;
+  onUpdateStatus?: (machineId: string, newStatus: "Running" | "Idle" | "Maintenance" | "Warning") => void;
 }
 
 export function MachineHealthTable({
   machines,
   onViewMachine,
   onScheduleMaintenance,
+  onUpdateStatus,
 }: MachineHealthTableProps) {
   if (machines.length === 0) {
     return (
@@ -96,9 +99,17 @@ export function MachineHealthTable({
                     </div>
                   </td>
 
-                  {/* Status Badge */}
+                  {/* Status Badge with Interactive Dropdown */}
                   <td className="py-3.5 px-3 whitespace-nowrap">
-                    <MachineStatusBadge status={machine.status} />
+                    {onUpdateStatus ? (
+                      <MachineStatusDropdown
+                        machineId={machine.id}
+                        status={machine.status}
+                        onStatusChange={onUpdateStatus}
+                      />
+                    ) : (
+                      <MachineStatusBadge status={machine.status} />
+                    )}
                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">
                       {machine.utilization}% util.
                     </div>
@@ -243,7 +254,15 @@ export function MachineHealthTable({
                 </span>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <MachineStatusBadge status={machine.status} />
+                {onUpdateStatus ? (
+                  <MachineStatusDropdown
+                    machineId={machine.id}
+                    status={machine.status}
+                    onStatusChange={onUpdateStatus}
+                  />
+                ) : (
+                  <MachineStatusBadge status={machine.status} />
+                )}
                 <span className="text-[10px] font-mono text-slate-400">
                   {machine.utilization}% util.
                 </span>

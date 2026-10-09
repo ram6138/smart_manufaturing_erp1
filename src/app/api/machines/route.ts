@@ -268,10 +268,7 @@ export async function GET() {
       let normalizedStatus: 'Running' | 'Idle' | 'Maintenance' | 'Warning' = 'Running';
       const sLower = rawStatus.toLowerCase();
 
-      // Known defective / warning equipment for rich simulation
-      if (m.machineCode === 'MCH-OVN-002' || m.machineCode === 'PACK-02' || m.machineCode === 'LINE-01') {
-        normalizedStatus = 'Warning';
-      } else if (sLower === 'warning' || sLower === 'alert' || sLower === 'degraded') {
+      if (sLower === 'warning' || sLower === 'alert' || sLower === 'degraded') {
         normalizedStatus = 'Warning';
       } else if (sLower === 'maintenance' || sLower === 'under maintenance' || sLower === 'repair' || sLower === 'offline') {
         normalizedStatus = 'Maintenance';
@@ -438,6 +435,25 @@ export async function POST(req: Request) {
         status: 'success',
         message: 'Machine added successfully!',
         machine: newM.rows[0],
+      });
+    }
+
+    if (action === 'updateStatus') {
+      const { machineId, status } = body;
+      const validStatuses = ['Running', 'Idle', 'Maintenance', 'Warning'];
+      const targetStatus = validStatuses.includes(status) ? status : 'Running';
+
+      await query(`
+        UPDATE machines 
+        SET status = $1
+        WHERE machine_id = $2;
+      `, [targetStatus, machineId]);
+
+      return NextResponse.json({
+        status: 'success',
+        message: `Machine status updated to ${targetStatus}`,
+        machineId,
+        newStatus: targetStatus,
       });
     }
 

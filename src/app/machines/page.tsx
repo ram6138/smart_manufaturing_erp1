@@ -227,6 +227,38 @@ export default function MachinesPage() {
     }, 4500);
   };
 
+  const handleUpdateMachineStatus = async (
+    machineId: string,
+    newStatus: "Running" | "Idle" | "Maintenance" | "Warning"
+  ) => {
+    // Optimistic UI update
+    setMachines((prev) =>
+      prev.map((m) => (m.id === machineId ? { ...m, status: newStatus } : m))
+    );
+    if (selectedMachineForDetails && selectedMachineForDetails.id === machineId) {
+      setSelectedMachineForDetails((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+
+    try {
+      const res = await fetch("/api/machines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updateStatus",
+          machineId: parseInt(machineId),
+          status: newStatus,
+        }),
+      });
+      if (res.ok) {
+        setSuccessToast(`Machine status updated to ${newStatus}`);
+        setTimeout(() => setSuccessToast(null), 3000);
+        fetchMachines();
+      }
+    } catch (err: any) {
+      console.error("Failed to update machine status:", err);
+    }
+  };
+
   const handleRefresh = () => {
     setIsRefreshing(true);
     fetchMachines().finally(() => {
@@ -325,6 +357,7 @@ export default function MachinesPage() {
             machines={filteredMachines}
             onViewMachine={handleOpenDetails}
             onScheduleMaintenance={(m) => handleOpenScheduleModal(m.id)}
+            onUpdateStatus={handleUpdateMachineStatus}
           />
         </div>
 
@@ -354,6 +387,7 @@ export default function MachinesPage() {
             setIsDetailsOpen(false);
             handleOpenScheduleModal(machineId);
           }}
+          onUpdateStatus={handleUpdateMachineStatus}
         />
 
         <ScheduleMaintenanceModal
