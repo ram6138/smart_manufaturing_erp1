@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { MachineItem, MaintenanceRecord, MaintenanceType } from "@/types/machines";
 import {
   X,
@@ -38,6 +38,72 @@ export function ScheduleMaintenanceModal({
   const [estimatedCost, setEstimatedCost] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const hoursInputRef = useRef<HTMLInputElement>(null);
+  const costInputRef = useRef<HTMLInputElement>(null);
+
+  const hoursRef = useRef(estimatedHours);
+  hoursRef.current = estimatedHours;
+  const costRef = useRef(estimatedCost);
+  costRef.current = estimatedCost;
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  // Non-passive native wheel listener for Hours input (prevents background scroll)
+  useEffect(() => {
+    const hoursEl = hoursInputRef.current;
+    if (!isOpen || !hoursEl) return;
+
+    const onHoursWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const current = parseFloat(hoursRef.current) || 0;
+      const step = 0.5;
+      if (e.deltaY < 0) {
+        const next = Math.min(48, Number((current + step).toFixed(1)));
+        setEstimatedHours(String(next));
+      } else {
+        const next = Math.max(0.5, Number((current - step).toFixed(1)));
+        setEstimatedHours(String(next));
+      }
+    };
+
+    hoursEl.addEventListener("wheel", onHoursWheel, { passive: false });
+    return () => hoursEl.removeEventListener("wheel", onHoursWheel);
+  }, [isOpen]);
+
+  // Non-passive native wheel listener for Cost input (prevents background scroll)
+  useEffect(() => {
+    const costEl = costInputRef.current;
+    if (!isOpen || !costEl) return;
+
+    const onCostWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const current = parseFloat(costRef.current) || 0;
+      const step = 25;
+      if (e.deltaY < 0) {
+        const next = current + step;
+        setEstimatedCost(String(next));
+      } else {
+        const next = Math.max(0, current - step);
+        setEstimatedCost(String(next));
+      }
+    };
+
+    costEl.addEventListener("wheel", onCostWheel, { passive: false });
+    return () => costEl.removeEventListener("wheel", onCostWheel);
+  }, [isOpen]);
 
   // Initialize only when modal opens (do NOT re-run on background polling updates)
   useEffect(() => {
@@ -100,33 +166,6 @@ export function ScheduleMaintenanceModal({
       setIsSubmitting(false);
       onClose();
     }, 400);
-  };
-
-  // Mouse wheel increment / decrement handlers
-  const handleHoursWheel = (e: React.WheelEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const current = parseFloat(estimatedHours) || 0;
-    const step = 0.5;
-    if (e.deltaY < 0) {
-      const next = Math.min(48, Number((current + step).toFixed(1)));
-      setEstimatedHours(String(next));
-    } else {
-      const next = Math.max(0.5, Number((current - step).toFixed(1)));
-      setEstimatedHours(String(next));
-    }
-  };
-
-  const handleCostWheel = (e: React.WheelEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const current = parseFloat(estimatedCost) || 0;
-    const step = 25;
-    if (e.deltaY < 0) {
-      const next = current + step;
-      setEstimatedCost(String(next));
-    } else {
-      const next = Math.max(0, current - step);
-      setEstimatedCost(String(next));
-    }
   };
 
   const selectedMachine = machines.find((m) => m.id === selectedMachineId);
@@ -268,6 +307,7 @@ export function ScheduleMaintenanceModal({
               </label>
               <div className="relative">
                 <input
+                  ref={hoursInputRef}
                   type="number"
                   step="0.5"
                   min="0.5"
@@ -275,7 +315,6 @@ export function ScheduleMaintenanceModal({
                   placeholder="e.g. 2.0"
                   value={estimatedHours}
                   onChange={(e) => setEstimatedHours(e.target.value)}
-                  onWheel={handleHoursWheel}
                   title="Scroll mouse wheel up/down to increment/decrement hours"
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
                 />
@@ -289,13 +328,13 @@ export function ScheduleMaintenanceModal({
               </label>
               <div className="relative">
                 <input
+                  ref={costInputRef}
                   type="number"
                   step="25"
                   min="0"
                   placeholder="e.g. 250"
                   value={estimatedCost}
                   onChange={(e) => setEstimatedCost(e.target.value)}
-                  onWheel={handleCostWheel}
                   title="Scroll mouse wheel up/down to increment/decrement cost"
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
                 />
