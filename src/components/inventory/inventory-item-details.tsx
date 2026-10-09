@@ -45,8 +45,10 @@ export function InventoryItemDetails({
 }: InventoryItemDetailsProps) {
   if (!item) return null;
 
-  // Filter transactions for this specific item
-  const itemTransactions = transactions.filter((t) => t.itemId === item.id);
+  // Filter transactions for this specific item by SKU code or ID
+  const itemTransactions = transactions.filter(
+    (t) => t.itemId === item.id || t.itemCode === item.itemCode
+  );
 
   // Generate simulated 7-day movement data for this item
   const movementData = [

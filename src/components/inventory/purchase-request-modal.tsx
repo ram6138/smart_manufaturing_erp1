@@ -119,7 +119,7 @@ export function PurchaseRequestModal({
               >
                 {allItems.map((i) => (
                   <option key={i.id} value={i.id}>
-                    {i.itemName} ({i.itemCode}) — Current: {i.availableQuantity} {i.unit}
+                    {i.itemName} ({i.itemCode}) — [{i.warehouse}] — Stock: {i.availableQuantity} {i.unit}
                   </option>
                 ))}
               </select>

@@ -132,8 +132,11 @@ export async function POST(req: Request) {
 
       // Find stock row
       const stockCheck = await query(
-        `SELECT product_id, warehouse_id, current_quantity, unit_cost FROM inventory_stock WHERE inventory_stock_id = $1`,
-        [itemId]
+        `SELECT s.product_id, s.warehouse_id, s.current_quantity, s.unit_cost, s.reorder_level, p.product_name, p.product_code 
+         FROM inventory_stock s 
+         JOIN products p ON s.product_id = p.product_id 
+         WHERE s.inventory_stock_id::text = $1`,
+        [String(itemId)]
       );
 
       if (stockCheck.rows.length === 0) {
@@ -141,27 +144,38 @@ export async function POST(req: Request) {
       }
 
       const stockRow = stockCheck.rows[0];
-      const openingStock = stockRow.current_quantity;
-      const closingStock = newQuantityOnHand;
-      const newValue = closingStock * (stockRow.unit_cost || 0);
+      const openingStock = Number(stockRow.current_quantity) || 0;
+      const closingStock = Math.max(0, Number(newQuantityOnHand) || 0);
+      const reorderLvl = Number(stockRow.reorder_level) || 500;
+      const unitCost = Number(stockRow.unit_cost) || 25.0;
+      const newValue = closingStock * unitCost;
+      const delta = adjustmentDelta !== undefined ? Number(adjustmentDelta) : (closingStock - openingStock);
+
+      const computedStatus = closingStock <= 0 ? 'Out of Stock' : closingStock <= reorderLvl ? 'Low Stock' : 'In Stock';
 
       // Update inventory_stock
       await query(
         `UPDATE inventory_stock 
-         SET current_quantity = $1, inventory_value = $2, updated_at = NOW() 
-         WHERE inventory_stock_id = $3`,
-        [closingStock, newValue, itemId]
+         SET current_quantity = $1, inventory_value = $2, stock_status = $3, updated_at = NOW() 
+         WHERE inventory_stock_id::text = $4`,
+        [closingStock, newValue, computedStatus, String(itemId)]
       );
 
       // Insert into inventory_transactions
+      const trxNotes = reason ? `${reason}${notes ? ` - ${notes}` : ''}` : 'Stock Adjustment';
       await query(
         `INSERT INTO inventory_transactions 
-         (transaction_date, product_id, warehouse_id, transaction_type, transaction_quantity, opening_stock, closing_stock, created_at)
-         VALUES (NOW(), $1, $2, 'Adjustment', $3, $4, $5, NOW())`,
-        [stockRow.product_id, stockRow.warehouse_id, adjustmentDelta, openingStock, closingStock]
+         (transaction_date, product_id, warehouse_id, transaction_type, transaction_quantity, opening_stock, closing_stock, notes, created_at)
+         VALUES (NOW(), $1, $2, 'Adjustment', $3, $4, $5, $6, NOW())`,
+        [stockRow.product_id, stockRow.warehouse_id, delta, openingStock, closingStock, trxNotes]
       );
 
-      return NextResponse.json({ status: 'success', message: 'Stock adjusted in database successfully' });
+      return NextResponse.json({
+        status: 'success',
+        message: 'Stock adjusted in database successfully',
+        productName: stockRow.product_name,
+        closingStock,
+      });
     }
 
     if (action === 'transferStock') {
