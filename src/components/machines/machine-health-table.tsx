@@ -17,7 +17,7 @@ import {
 interface MachineHealthTableProps {
   machines: MachineItem[];
   onViewMachine: (machine: MachineItem) => void;
-  onScheduleMaintenance: (machine: MachineItem) => void;
+  onScheduleMaintenance?: (machine: MachineItem) => void;
   onUpdateStatus?: (machineId: string, newStatus: "Running" | "Idle" | "Maintenance" | "Warning") => void;
 }
 
@@ -205,25 +205,15 @@ export function MachineHealthTable({
 
                   {/* Actions */}
                   <td className="py-3.5 pl-3 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end">
                       {/* View details */}
                       <button
                         onClick={() => onViewMachine(machine)}
-                        className="p-1.5 rounded-lg bg-cyan-950/90 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/60 transition shadow-sm"
+                        className="p-1.5 rounded-lg bg-cyan-950/90 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/60 transition shadow-sm cursor-pointer"
                         title="View Telemetry & Maintenance History"
                         aria-label="View Machine"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                      </button>
-
-                      {/* Schedule Maintenance */}
-                      <button
-                        onClick={() => onScheduleMaintenance(machine)}
-                        className="p-1.5 rounded-lg bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-700/60 transition shadow-sm"
-                        title="Schedule Preventive or Corrective Maintenance"
-                        aria-label="Schedule Maintenance"
-                      >
-                        <Wrench className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>
@@ -307,18 +297,10 @@ export function MachineHealthTable({
             <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 onClick={() => onViewMachine(machine)}
-                className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white border border-blue-600 flex items-center gap-1.5 shadow-xs"
+                className="w-full px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-700 text-xs font-semibold text-white border border-cyan-600 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <Eye className="w-3.5 h-3.5 text-white" />
                 <span>View Details</span>
-              </button>
-
-              <button
-                onClick={() => onScheduleMaintenance(machine)}
-                className="px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-xs font-semibold text-blue-700 border border-blue-200 flex items-center gap-1.5 shadow-xs"
-              >
-                <Wrench className="w-3.5 h-3.5 text-blue-600" />
-                <span>Schedule MNT</span>
               </button>
             </div>
           </div>
