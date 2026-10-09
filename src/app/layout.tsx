@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   title: "Smart Manufacturing ERP | Enterprise Production & Operations",
   description:
     "AI-Powered Smart Manufacturing ERP platform for production planning, orders, inventory, machine maintenance, quality control, and insights.",
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/logo.png", type: "image/png" }
+    ],
+    shortcut: "/favicon.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
