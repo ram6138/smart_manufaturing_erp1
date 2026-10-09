@@ -22,8 +22,8 @@ export function LoginForm() {
 
   const { login, isLoading: authLoading } = useAuth();
 
-  const [email, setEmail] = useState<string>("admin@factory.com");
-  const [password, setPassword] = useState<string>("Admin@123");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
