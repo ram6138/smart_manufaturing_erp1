@@ -8,7 +8,6 @@ import {
   Send,
   Bot,
   User,
-  Trash2,
   ExternalLink,
   ChevronRight,
 } from "lucide-react";
@@ -180,11 +179,11 @@ export function ManufacturingCopilot() {
         <div className="fixed bottom-6 right-6 z-50">
           <button
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-cyan-400 font-medium text-xs shadow-xl border border-cyan-500/40 hover:border-cyan-400 transition cursor-pointer"
+            className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:via-indigo-500 hover:to-cyan-400 text-white font-semibold text-xs shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border border-white/20 backdrop-blur-sm"
             title="Open AI Copilot"
           >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="text-white font-semibold">AI Copilot</span>
+            <Sparkles className="w-4 h-4 text-cyan-200 animate-spin" style={{ animationDuration: "8s" }} />
+            <span className="tracking-wide">AI Copilot</span>
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           </button>
         </div>
@@ -199,7 +198,7 @@ export function ManufacturingCopilot() {
           {/* Simple Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800 shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
+              <div className="w-7 h-7 rounded-lg bg-indigo-500/20 text-cyan-400 flex items-center justify-center border border-indigo-500/30">
                 <Bot className="w-4 h-4" />
               </div>
               <div>
@@ -212,14 +211,6 @@ export function ManufacturingCopilot() {
             </div>
 
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setMessages(INITIAL_MESSAGES)}
-                className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800/60 rounded-lg transition cursor-pointer"
-                title="Clear chat"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
@@ -247,7 +238,7 @@ export function ManufacturingCopilot() {
                 <div
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 shadow-sm ${
                     msg.sender === "user"
-                      ? "bg-cyan-600 text-white rounded-tr-xs"
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-xs"
                       : "bg-slate-900 border border-slate-800 text-slate-200 rounded-tl-xs"
                   }`}
                 >
@@ -286,7 +277,7 @@ export function ManufacturingCopilot() {
 
                   <span
                     className={`block text-[8px] font-mono text-right mt-1 ${
-                      msg.sender === "user" ? "text-cyan-200/70" : "text-slate-500"
+                      msg.sender === "user" ? "text-indigo-200/80" : "text-slate-500"
                     }`}
                   >
                     {msg.timestamp}
