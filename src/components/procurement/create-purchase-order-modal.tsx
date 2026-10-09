@@ -332,19 +332,6 @@ export function CreatePurchaseOrderModal({
             </div>
           </div>
 
-          {/* Notes */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              Special Instructions & Delivery Dock Terms
-            </label>
-            <textarea
-              rows={2}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-cyan-500 resize-none leading-relaxed"
-            />
-          </div>
-
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800 shrink-0">
             <button
