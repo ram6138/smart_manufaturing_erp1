@@ -5,13 +5,17 @@ import { MachineItem, MaintenanceRecord, MaintenanceType } from "@/types/machine
 import {
   X,
   Wrench,
-  Calendar,
+  Calendar as CalendarIcon,
   User,
   FileText,
   Clock,
   IndianRupee,
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface ScheduleMaintenanceModalProps {
@@ -39,8 +43,16 @@ export function ScheduleMaintenanceModal({
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Custom in-DOM dropdown states (prevents OS native window popups that cause black screen)
+  const [isMachineDropdownOpen, setIsMachineDropdownOpen] = useState(false);
+  const [machineSearch, setMachineSearch] = useState("");
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [viewMonth, setViewMonth] = useState<Date>(() => new Date());
+
   const hoursInputRef = useRef<HTMLInputElement>(null);
   const costInputRef = useRef<HTMLInputElement>(null);
+  const machineDropdownRef = useRef<HTMLDivElement>(null);
+  const datePickerRef = useRef<HTMLDivElement>(null);
 
   const hoursRef = useRef(estimatedHours);
   hoursRef.current = estimatedHours;
@@ -59,7 +71,27 @@ export function ScheduleMaintenanceModal({
     };
   }, [isOpen]);
 
-  // Non-passive native wheel listener for Hours input (prevents background scroll)
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        machineDropdownRef.current &&
+        !machineDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsMachineDropdownOpen(false);
+      }
+      if (
+        datePickerRef.current &&
+        !datePickerRef.current.contains(e.target as Node)
+      ) {
+        setIsDatePickerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Non-passive native wheel listener for Hours input
   useEffect(() => {
     const hoursEl = hoursInputRef.current;
     if (!isOpen || !hoursEl) return;
@@ -82,7 +114,7 @@ export function ScheduleMaintenanceModal({
     return () => hoursEl.removeEventListener("wheel", onHoursWheel);
   }, [isOpen]);
 
-  // Non-passive native wheel listener for Cost input (prevents background scroll)
+  // Non-passive native wheel listener for Cost input
   useEffect(() => {
     const costEl = costInputRef.current;
     if (!isOpen || !costEl) return;
@@ -105,7 +137,7 @@ export function ScheduleMaintenanceModal({
     return () => costEl.removeEventListener("wheel", onCostWheel);
   }, [isOpen]);
 
-  // Initialize only when modal opens (do NOT re-run on background polling updates)
+  // Initialize only when modal opens
   useEffect(() => {
     if (isOpen) {
       if (preselectedMachineId) {
@@ -121,6 +153,10 @@ export function ScheduleMaintenanceModal({
       setMaintenanceType("Preventive");
       setError("");
       setIsSubmitting(false);
+      setIsMachineDropdownOpen(false);
+      setIsDatePickerOpen(false);
+      setMachineSearch("");
+      setViewMonth(new Date());
     }
   }, [isOpen, preselectedMachineId]);
 
@@ -170,9 +206,61 @@ export function ScheduleMaintenanceModal({
 
   const selectedMachine = machines.find((m) => m.id === selectedMachineId);
 
+  // Filtered machines for custom dropdown
+  const filteredMachinesList = machines.filter((m) => {
+    if (!machineSearch.trim()) return true;
+    const q = machineSearch.toLowerCase();
+    return (
+      (m.machineCode || "").toLowerCase().includes(q) ||
+      (m.machineName || "").toLowerCase().includes(q) ||
+      (m.location || "").toLowerCase().includes(q)
+    );
+  });
+
+  // Calendar Helper functions
+  const formatDateForDisplay = (dStr: string) => {
+    if (!dStr) return "";
+    try {
+      const [y, m, d] = dStr.split("-").map(Number);
+      const dt = new Date(y, m - 1, d);
+      return dt.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return dStr;
+    }
+  };
+
+  const setPresetDate = (daysFromToday: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + daysFromToday);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    setScheduledDate(`${y}-${m}-${day}`);
+    setIsDatePickerOpen(false);
+  };
+
+  // Calendar day grid calculation
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const calYear = viewMonth.getFullYear();
+  const calMonth = viewMonth.getMonth();
+  const totalDays = getDaysInMonth(calYear, calMonth);
+  const firstDay = getFirstDayOfMonth(calYear, calMonth);
+  const monthName = viewMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-6 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-6 overflow-visible">
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
@@ -201,25 +289,105 @@ export function ScheduleMaintenanceModal({
             </div>
           )}
 
-          {/* Machine Selection */}
-          <div>
+          {/* Machine Selection (Custom in-DOM Dropdown) */}
+          <div className="relative" ref={machineDropdownRef}>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
               Target Machine *
             </label>
-            <select
-              value={selectedMachineId}
-              onChange={(e) => setSelectedMachineId(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer [color-scheme:dark]"
+            <button
+              type="button"
+              onClick={() => {
+                setIsMachineDropdownOpen((prev) => !prev);
+                setIsDatePickerOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-lg text-left text-sm text-slate-200 focus:outline-none focus:border-cyan-500 transition-all cursor-pointer shadow-sm"
             >
-              <option value="" disabled className="text-slate-500">
-                -- Select Target Machine --
-              </option>
-              {machines.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.machineCode} — {m.machineName} ({m.status} | Risk: {m.riskScore}%)
-                </option>
-              ))}
-            </select>
+              {selectedMachine ? (
+                <div className="flex items-center gap-2 truncate">
+                  <span className="font-semibold text-cyan-400 font-mono">{selectedMachine.machineCode}</span>
+                  <span className="text-white truncate">— {selectedMachine.machineName}</span>
+                  <span
+                    className={`ml-1.5 text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
+                      selectedMachine.status === "Running"
+                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                        : selectedMachine.status === "Warning"
+                        ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                        : "bg-slate-800 border-slate-700 text-slate-300"
+                    }`}
+                  >
+                    {selectedMachine.status}
+                  </span>
+                </div>
+              ) : (
+                <span className="text-slate-500">-- Select Target Machine --</span>
+              )}
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform shrink-0 ${
+                  isMachineDropdownOpen ? "rotate-180 text-cyan-400" : ""
+                }`}
+              />
+            </button>
+
+            {/* Custom Dropdown Menu */}
+            {isMachineDropdownOpen && (
+              <div className="absolute left-0 right-0 top-full mt-1.5 z-50 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl p-2 max-h-64 overflow-y-auto space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                <div className="relative mb-2 px-1">
+                  <input
+                    type="text"
+                    placeholder="Search machine code or name..."
+                    value={machineSearch}
+                    onChange={(e) => setMachineSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                  />
+                  <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                </div>
+
+                {filteredMachinesList.length === 0 ? (
+                  <div className="p-3 text-center text-xs text-slate-500">No matching machines</div>
+                ) : (
+                  filteredMachinesList.map((m) => {
+                    const isCurrent = m.id === selectedMachineId;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedMachineId(m.id);
+                          setIsMachineDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between p-2.5 rounded-lg text-left text-xs transition-colors cursor-pointer ${
+                          isCurrent
+                            ? "bg-cyan-500/15 border border-cyan-500/30 text-white"
+                            : "hover:bg-slate-800/80 text-slate-300 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-cyan-400">{m.machineCode}</span>
+                            <span className="font-medium text-white">{m.machineName}</span>
+                          </div>
+                          <span className="text-[11px] text-slate-400">{m.location || "Main Factory"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold ${
+                              m.riskScore >= 75
+                                ? "bg-rose-500/20 text-rose-300"
+                                : m.riskScore >= 45
+                                ? "bg-amber-500/20 text-amber-300"
+                                : "bg-emerald-500/20 text-emerald-300"
+                            }`}
+                          >
+                            Risk {m.riskScore}%
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            )}
+
             {selectedMachine && (
               <p className="text-xs text-slate-400 mt-1">
                 Location: <span className="text-slate-300">{selectedMachine.location}</span> | Current Risk:{" "}
@@ -266,25 +434,125 @@ export function ScheduleMaintenanceModal({
 
           {/* Scheduled Date & Technician */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
+            {/* Custom Scheduled Date In-DOM Picker */}
+            <div className="relative" ref={datePickerRef}>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Scheduled Date *
               </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  placeholder="YYYY-MM-DD"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                  onClick={(e) => {
-                    try {
-                      (e.target as HTMLInputElement).showPicker?.();
-                    } catch {}
-                  }}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors [color-scheme:dark] cursor-pointer"
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDatePickerOpen((prev) => !prev);
+                  setIsMachineDropdownOpen(false);
+                }}
+                className="w-full flex items-center justify-between pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer text-left relative"
+              >
+                <CalendarIcon className="w-4 h-4 text-cyan-400 absolute left-3 top-2.5 pointer-events-none" />
+                <span className={scheduledDate ? "text-slate-100 font-medium" : "text-slate-500"}>
+                  {scheduledDate ? formatDateForDisplay(scheduledDate) : "Pick date..."}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-400 transition-transform ${
+                    isDatePickerOpen ? "rotate-180 text-cyan-400" : ""
+                  }`}
                 />
-                <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
-              </div>
+              </button>
+
+              {/* In-DOM Calendar Dropdown */}
+              {isDatePickerOpen && (
+                <div className="absolute left-0 right-0 sm:right-auto sm:w-72 top-full mt-1.5 z-50 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl p-3 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Quick Preset Buttons */}
+                  <div className="grid grid-cols-3 gap-1 pb-2.5 mb-2.5 border-b border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setPresetDate(0)}
+                      className="px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-cyan-500 text-[11px] text-slate-300 font-medium hover:text-white"
+                    >
+                      Today
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPresetDate(1)}
+                      className="px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-cyan-500 text-[11px] text-slate-300 font-medium hover:text-white"
+                    >
+                      Tomorrow
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPresetDate(7)}
+                      className="px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:border-cyan-500 text-[11px] text-slate-300 font-medium hover:text-white"
+                    >
+                      +1 Week
+                    </button>
+                  </div>
+
+                  {/* Calendar Header */}
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <button
+                      type="button"
+                      onClick={() => setViewMonth(new Date(calYear, calMonth - 1, 1))}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-bold text-white">{monthName}</span>
+                    <button
+                      type="button"
+                      onClick={() => setViewMonth(new Date(calYear, calMonth + 1, 1))}
+                      className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Day Names */}
+                  <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-slate-500 mb-1">
+                    <span>Su</span>
+                    <span>Mo</span>
+                    <span>Tu</span>
+                    <span>We</span>
+                    <span>Th</span>
+                    <span>Fr</span>
+                    <span>Sa</span>
+                  </div>
+
+                  {/* Day Cells */}
+                  <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                    {Array.from({ length: firstDay }).map((_, i) => (
+                      <div key={`empty-${i}`} />
+                    ))}
+                    {Array.from({ length: totalDays }).map((_, i) => {
+                      const dayNum = i + 1;
+                      const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(
+                        dayNum
+                      ).padStart(2, "0")}`;
+                      const isSelected = scheduledDate === dateStr;
+                      const isToday =
+                        new Date().toDateString() === new Date(calYear, calMonth, dayNum).toDateString();
+
+                      return (
+                        <button
+                          key={dayNum}
+                          type="button"
+                          onClick={() => {
+                            setScheduledDate(dateStr);
+                            setIsDatePickerOpen(false);
+                          }}
+                          className={`h-7 w-7 mx-auto rounded-lg flex items-center justify-center font-medium transition-all ${
+                            isSelected
+                              ? "bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/30"
+                              : isToday
+                              ? "border border-cyan-500/50 text-cyan-400 hover:bg-slate-800"
+                              : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                          }`}
+                        >
+                          {dayNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
