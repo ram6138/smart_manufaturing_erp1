@@ -145,40 +145,6 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
       "Finance Manager",
     ],
   },
-  {
-    title: "AI Insights",
-    href: "/ai-insights",
-    icon: Sparkles,
-    badge: "AI",
-    badgeColor: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30",
-    description: "Predictive maintenance & yield optimization",
-    allowedRoles: [
-      "Admin",
-      "Factory Manager",
-      "Production Manager",
-      "Inventory Manager",
-      "Maintenance Manager",
-      "Quality Manager",
-      "Finance Manager",
-    ],
-  },
-  {
-    title: "Reports",
-    href: "/reports",
-    icon: BarChart3,
-    description: "OEE reports, audit logs & business intelligence",
-    allowedRoles: [
-      "Admin",
-      "Factory Manager",
-      "Production Manager",
-      "Inventory Manager",
-      "Maintenance Manager",
-      "Quality Manager",
-      "Procurement Manager",
-      "HR Manager",
-      "Finance Manager",
-    ],
-  },
 ];
 
 export const BOTTOM_NAV_ITEMS: NavItem[] = [
