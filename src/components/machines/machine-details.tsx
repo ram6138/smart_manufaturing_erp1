@@ -62,6 +62,23 @@ export function MachineDetails({
     };
   }, [isOpen]);
 
+  // Native non-passive wheel listener to guarantee mouse wheel scrolling inside the modal
+  useEffect(() => {
+    const bodyEl = modalBodyRef.current;
+    if (!isOpen || !bodyEl) return;
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        e.stopPropagation();
+        bodyEl.scrollTop += e.deltaY;
+      }
+    };
+
+    bodyEl.addEventListener("wheel", onWheel, { passive: false });
+    return () => bodyEl.removeEventListener("wheel", onWheel);
+  }, [isOpen]);
+
   if (!isOpen || !machine) return null;
 
   const formatDate = (dateStr: string) => {
@@ -77,27 +94,33 @@ export function MachineDetails({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70">
-      <div className="relative w-full max-w-5xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75">
+      <div
+        style={{ backgroundColor: "#0f172a" }}
+        className="relative w-full max-w-5xl border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-slate-100"
+      >
         {/* Header Bar */}
-        <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shrink-0">
+        <div
+          style={{ backgroundColor: "#1e293b" }}
+          className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-800 shrink-0"
+        >
           <div className="flex items-center gap-3 sm:gap-4">
-            <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 dark:bg-cyan-500/10 dark:border-cyan-500/20 text-blue-600 dark:text-cyan-400">
+            <div className="p-3 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-400">
               <Cpu className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                   {machine.machineName}
                 </h2>
-                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 dark:bg-cyan-950/80 dark:text-cyan-300 dark:border-cyan-800/50 font-bold">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-cyan-950/90 text-cyan-300 border border-cyan-700/50 font-bold">
                   {machine.machineCode}
                 </span>
                 <MachineStatusBadge status={machine.status} />
               </div>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex items-center gap-3 mt-1">
+              <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-3 mt-1">
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <MapPin className="w-3.5 h-3.5 text-slate-500" />
                   {machine.location}
                 </span>
                 <span>•</span>
@@ -109,7 +132,7 @@ export function MachineDetails({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onScheduleMaintenance(machine.id)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 transition-colors shadow-sm cursor-pointer"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors shadow-sm cursor-pointer"
             >
               <Wrench className="w-3.5 h-3.5" />
               <span>Schedule MNT</span>
@@ -117,7 +140,7 @@ export function MachineDetails({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -125,13 +148,16 @@ export function MachineDetails({
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-2 px-6 pt-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 shrink-0">
+        <div
+          style={{ backgroundColor: "#0b1329" }}
+          className="flex items-center gap-2 px-6 pt-3 border-b border-slate-800 shrink-0"
+        >
           <button
             onClick={() => setActiveTab("overview")}
             className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "overview"
-                ? "border-blue-600 text-blue-600 dark:border-cyan-400 dark:text-cyan-300"
-                : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                ? "border-cyan-400 text-cyan-300"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <Gauge className="w-3.5 h-3.5" />
@@ -141,8 +167,8 @@ export function MachineDetails({
             onClick={() => setActiveTab("sensors")}
             className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "sensors"
-                ? "border-blue-600 text-blue-600 dark:border-cyan-400 dark:text-cyan-300"
-                : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                ? "border-cyan-400 text-cyan-300"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
@@ -152,8 +178,8 @@ export function MachineDetails({
             onClick={() => setActiveTab("history")}
             className={`px-4 py-2.5 text-xs font-bold border-b-2 transition-all flex items-center gap-1.5 cursor-pointer ${
               activeTab === "history"
-                ? "border-blue-600 text-blue-600 dark:border-cyan-400 dark:text-cyan-300"
-                : "border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                ? "border-cyan-400 text-cyan-300"
+                : "border-transparent text-slate-400 hover:text-slate-200"
             }`}
           >
             <History className="w-3.5 h-3.5" />
@@ -162,14 +188,18 @@ export function MachineDetails({
         </div>
 
         {/* Modal Body */}
-        <div ref={modalBodyRef} className="p-6 overflow-y-auto overscroll-contain space-y-6 flex-1 min-h-0">
+        <div
+          style={{ backgroundColor: "#0f172a" }}
+          ref={modalBodyRef}
+          className="p-6 overflow-y-auto overscroll-contain space-y-6 flex-1 min-h-0"
+        >
           {activeTab === "overview" && (
             <>
               {/* Machine Specs Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800">
+                <div style={{ backgroundColor: "#1e293b" }} className="p-3.5 rounded-xl border border-slate-700/80">
                   <div className="text-xs text-slate-400 flex items-center gap-1 mb-1">
-                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
                     <span>Installation Date</span>
                   </div>
                   <div className="text-sm font-semibold text-slate-200">
@@ -177,9 +207,9 @@ export function MachineDetails({
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800">
+                <div style={{ backgroundColor: "#1e293b" }} className="p-3.5 rounded-xl border border-slate-700/80">
                   <div className="text-xs text-slate-400 flex items-center gap-1 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-slate-500" />
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span>Operating Hours</span>
                   </div>
                   <div className="text-sm font-semibold text-white">
@@ -187,9 +217,9 @@ export function MachineDetails({
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800">
+                <div style={{ backgroundColor: "#1e293b" }} className="p-3.5 rounded-xl border border-slate-700/80">
                   <div className="text-xs text-slate-400 flex items-center gap-1 mb-1">
-                    <History className="w-3.5 h-3.5 text-slate-500" />
+                    <History className="w-3.5 h-3.5 text-slate-400" />
                     <span>Last Maintenance</span>
                   </div>
                   <div className="text-sm font-semibold text-slate-200">
@@ -197,7 +227,7 @@ export function MachineDetails({
                   </div>
                 </div>
 
-                <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800">
+                <div style={{ backgroundColor: "#1e293b" }} className="p-3.5 rounded-xl border border-slate-700/80">
                   <div className="text-xs text-slate-400 flex items-center gap-1 mb-1">
                     <Wrench className="w-3.5 h-3.5 text-cyan-400" />
                     <span>Next Maintenance</span>
@@ -216,13 +246,13 @@ export function MachineDetails({
                 </h3>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                   {/* Temperature */}
-                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 relative overflow-hidden">
+                  <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-slate-700/80 relative overflow-hidden">
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                       <span className="flex items-center gap-1.5">
                         <Thermometer className="w-4 h-4 text-rose-400" />
                         Temperature
                       </span>
-                      <span className="font-mono text-[11px] text-slate-500">24h Peak: 92°C</span>
+                      <span className="font-mono text-[11px] text-slate-400">24h Peak: 92°C</span>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-2xl font-bold text-white">
@@ -230,7 +260,7 @@ export function MachineDetails({
                       </span>
                       <span className="text-xs text-slate-400">°C</span>
                     </div>
-                    <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div className="w-full bg-slate-900 h-1.5 rounded-full mt-3 overflow-hidden border border-slate-800">
                       <div
                         className={`h-full transition-all ${
                           machine.currentTemperature > 100
@@ -245,13 +275,13 @@ export function MachineDetails({
                   </div>
 
                   {/* Vibration */}
-                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 relative overflow-hidden">
+                  <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-slate-700/80 relative overflow-hidden">
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                       <span className="flex items-center gap-1.5">
                         <Activity className="w-4 h-4 text-cyan-400" />
                         Vibration (RMS)
                       </span>
-                      <span className="font-mono text-[11px] text-slate-500">ISO 10816</span>
+                      <span className="font-mono text-[11px] text-slate-400">ISO 10816</span>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-2xl font-bold text-white">
@@ -259,7 +289,7 @@ export function MachineDetails({
                       </span>
                       <span className="text-xs text-slate-400">mm/s</span>
                     </div>
-                    <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div className="w-full bg-slate-900 h-1.5 rounded-full mt-3 overflow-hidden border border-slate-800">
                       <div
                         className={`h-full transition-all ${
                           machine.currentVibration > 4.5
@@ -274,13 +304,13 @@ export function MachineDetails({
                   </div>
 
                   {/* Motor Load */}
-                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 relative overflow-hidden">
+                  <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-slate-700/80 relative overflow-hidden">
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                       <span className="flex items-center gap-1.5">
                         <Gauge className="w-4 h-4 text-amber-400" />
                         Motor Load
                       </span>
-                      <span className="font-mono text-[11px] text-slate-500">Nominal: 75%</span>
+                      <span className="font-mono text-[11px] text-slate-400">Nominal: 75%</span>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-2xl font-bold text-white">
@@ -288,7 +318,7 @@ export function MachineDetails({
                       </span>
                       <span className="text-xs text-slate-400">%</span>
                     </div>
-                    <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div className="w-full bg-slate-900 h-1.5 rounded-full mt-3 overflow-hidden border border-slate-800">
                       <div
                         className={`h-full transition-all ${
                           machine.currentMotorLoad > 90
@@ -303,13 +333,13 @@ export function MachineDetails({
                   </div>
 
                   {/* Power Consumption */}
-                  <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 relative overflow-hidden">
+                  <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-slate-700/80 relative overflow-hidden">
                     <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                       <span className="flex items-center gap-1.5">
                         <Zap className="w-4 h-4 text-yellow-400" />
                         Power Consumption
                       </span>
-                      <span className="font-mono text-[11px] text-slate-500">3-Phase kW</span>
+                      <span className="font-mono text-[11px] text-slate-400">3-Phase kW</span>
                     </div>
                     <div className="flex items-baseline gap-1">
                       <span className="text-2xl font-bold text-white">
@@ -317,7 +347,7 @@ export function MachineDetails({
                       </span>
                       <span className="text-xs text-slate-400">kW</span>
                     </div>
-                    <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div className="w-full bg-slate-900 h-1.5 rounded-full mt-3 overflow-hidden border border-slate-800">
                       <div
                         className="h-full bg-yellow-500 transition-all"
                         style={{ width: `${Math.min(100, (machine.currentPower / 60) * 100)}%` }}
@@ -328,13 +358,13 @@ export function MachineDetails({
               </div>
 
               {/* AI Prediction Box */}
-              <div className="p-4 rounded-xl bg-slate-950 border border-cyan-500/20">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80 mb-3">
+              <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-cyan-500/30">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/80 mb-3">
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <div className="p-1.5 rounded-lg bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
                       <Sparkles className="w-4 h-4" />
                     </div>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
+                    <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
                       Predictive Failure Analysis (Prototype AI)
                     </span>
                   </div>
@@ -344,20 +374,20 @@ export function MachineDetails({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
                     <span className="text-slate-400 block mb-1">Main Risk Factor</span>
-                    <p className="text-slate-200 font-medium bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                    <p style={{ backgroundColor: "#0f172a" }} className="text-slate-200 font-medium p-2.5 rounded-lg border border-slate-700/80">
                       {machine.prediction.mainRiskFactor}
                     </p>
                     <span className="text-slate-400 block mt-2.5 mb-1">Health Pattern Prediction</span>
-                    <p className="text-slate-300 bg-slate-900 p-2.5 rounded-lg border border-slate-800">
+                    <p style={{ backgroundColor: "#0f172a" }} className="text-slate-300 p-2.5 rounded-lg border border-slate-700/80">
                       &quot;{machine.prediction.prediction}&quot;
                     </p>
                   </div>
                   <div>
                     <span className="text-slate-400 block mb-1">Recommended Action</span>
-                    <p className="text-cyan-200 font-medium bg-cyan-950/30 p-2.5 rounded-lg border border-cyan-900/40">
+                    <p style={{ backgroundColor: "rgba(8, 51, 68, 0.4)" }} className="text-cyan-200 font-medium p-2.5 rounded-lg border border-cyan-800/60">
                       {machine.prediction.recommendedAction}
                     </p>
-                    <div className="mt-2.5 flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400">
+                    <div style={{ backgroundColor: "#0f172a" }} className="mt-2.5 flex items-center justify-between p-2.5 rounded-lg border border-slate-700/80 text-slate-400">
                       <span>Prediction Window: <strong className="text-white">{machine.prediction.predictedFailureWindow}</strong></span>
                       <span>Confidence: <strong className="text-cyan-400">{machine.prediction.confidenceScore}%</strong></span>
                     </div>
@@ -370,7 +400,7 @@ export function MachineDetails({
           {activeTab === "sensors" && (
             <div className="space-y-6">
               {/* Temperature Trend */}
-              <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800">
+              <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-slate-700/80">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Thermometer className="w-4 h-4 text-rose-400" />
@@ -387,11 +417,11 @@ export function MachineDetails({
                           <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="hourLabel" stroke="#64748b" fontSize={11} />
-                      <YAxis stroke="#64748b" fontSize={11} domain={["dataMin - 5", "dataMax + 10"]} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="hourLabel" stroke="#94a3b8" fontSize={11} />
+                      <YAxis stroke="#94a3b8" fontSize={11} domain={["dataMin - 5", "dataMax + 10"]} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "8px" }}
+                        contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "8px", color: "#f8fafc" }}
                         formatter={(val: any) => [`${val} °C`, "Temperature"]}
                       />
                       <Area type="monotone" dataKey="temperature" stroke="#f43f5e" strokeWidth={2} fill="url(#detTempGrad)" />
@@ -401,7 +431,7 @@ export function MachineDetails({
               </div>
 
               {/* Vibration Trend */}
-              <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800">
+              <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-slate-700/80">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Activity className="w-4 h-4 text-cyan-400" />
@@ -418,11 +448,11 @@ export function MachineDetails({
                           <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="hourLabel" stroke="#64748b" fontSize={11} />
-                      <YAxis stroke="#64748b" fontSize={11} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="hourLabel" stroke="#94a3b8" fontSize={11} />
+                      <YAxis stroke="#94a3b8" fontSize={11} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "8px" }}
+                        contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "8px", color: "#f8fafc" }}
                         formatter={(val: any) => [`${val} mm/s`, "Vibration"]}
                       />
                       <Area type="monotone" dataKey="vibration" stroke="#06b6d4" strokeWidth={2} fill="url(#detVibGrad)" />
@@ -432,7 +462,7 @@ export function MachineDetails({
               </div>
 
               {/* Motor Load Trend */}
-              <div className="p-4 bg-slate-950/80 rounded-xl border border-slate-800">
+              <div style={{ backgroundColor: "#1e293b" }} className="p-4 rounded-xl border border-slate-700/80">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Gauge className="w-4 h-4 text-amber-400" />
@@ -442,11 +472,11 @@ export function MachineDetails({
                 <div className="h-56 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={machine.sensorHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                      <XAxis dataKey="hourLabel" stroke="#64748b" fontSize={11} />
-                      <YAxis stroke="#64748b" fontSize={11} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="hourLabel" stroke="#94a3b8" fontSize={11} />
+                      <YAxis stroke="#94a3b8" fontSize={11} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "8px" }}
+                        contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155", borderRadius: "8px", color: "#f8fafc" }}
                       />
                       <Line type="monotone" dataKey="motorLoad" name="Motor Load %" stroke="#f59e0b" strokeWidth={2} dot={false} />
                       <Line type="monotone" dataKey="powerConsumption" name="Power kW" stroke="#10b981" strokeWidth={2} dot={false} />
@@ -465,17 +495,17 @@ export function MachineDetails({
                 </h3>
                 <button
                   onClick={() => onScheduleMaintenance(machine.id)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition-colors cursor-pointer"
                 >
                   <Wrench className="w-3.5 h-3.5" />
                   <span>+ Add Service Record</span>
                 </button>
               </div>
 
-              <div className="overflow-x-auto rounded-xl border border-slate-800">
+              <div className="overflow-x-auto rounded-xl border border-slate-700/80" style={{ backgroundColor: "#1e293b" }}>
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
+                    <tr style={{ backgroundColor: "#0b1329" }} className="border-b border-slate-700 text-slate-400 uppercase tracking-wider font-semibold">
                       <th className="py-3 px-4">Maintenance ID</th>
                       <th className="py-3 px-4">Date</th>
                       <th className="py-3 px-4">Type</th>
@@ -486,20 +516,20 @@ export function MachineDetails({
                       <th className="py-3 px-4">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                  <tbody className="divide-y divide-slate-700/60 text-slate-200">
                     {machine.maintenanceHistory.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="py-6 text-center text-slate-500">
+                        <td colSpan={8} className="py-6 text-center text-slate-400">
                           No prior maintenance records found for this equipment.
                         </td>
                       </tr>
                     ) : (
                       machine.maintenanceHistory.map((rec) => (
-                        <tr key={rec.id} className="hover:bg-slate-800/40 transition-colors">
+                        <tr key={rec.id} className="hover:bg-slate-700/40 transition-colors">
                           <td className="py-3 px-4 font-mono text-cyan-400 font-semibold">
                             {rec.maintenanceId}
                           </td>
-                          <td className="py-3 px-4 whitespace-nowrap">{formatDate(rec.date)}</td>
+                          <td className="py-3 px-4 whitespace-nowrap text-slate-300">{formatDate(rec.date)}</td>
                           <td className="py-3 px-4">
                             <span
                               className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
@@ -513,11 +543,11 @@ export function MachineDetails({
                               {rec.type}
                             </span>
                           </td>
-                          <td className="py-3 px-4 max-w-xs">{rec.description}</td>
-                          <td className="py-3 px-4 whitespace-nowrap font-medium text-slate-200">
+                          <td className="py-3 px-4 max-w-xs text-slate-300">{rec.description}</td>
+                          <td className="py-3 px-4 whitespace-nowrap font-medium text-slate-100">
                             {rec.technician}
                           </td>
-                          <td className="py-3 px-4 whitespace-nowrap font-mono">
+                          <td className="py-3 px-4 whitespace-nowrap font-mono text-slate-300">
                             {rec.downtimeHours} hrs
                           </td>
                           <td className="py-3 px-4 whitespace-nowrap font-mono font-semibold text-emerald-400">
@@ -547,11 +577,14 @@ export function MachineDetails({
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end text-xs text-slate-500 shrink-0">
+        <div
+          style={{ backgroundColor: "#0b1329" }}
+          className="p-4 border-t border-slate-800 flex items-center justify-end text-xs text-slate-400 shrink-0"
+        >
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2 rounded-lg bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-colors cursor-pointer"
+            className="px-5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition-colors cursor-pointer"
           >
             Close Details
           </button>
