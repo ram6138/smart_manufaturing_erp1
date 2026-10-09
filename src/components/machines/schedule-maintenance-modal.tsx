@@ -34,29 +34,29 @@ export function ScheduleMaintenanceModal({
   const [scheduledDate, setScheduledDate] = useState<string>("");
   const [technician, setTechnician] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [estimatedHours, setEstimatedHours] = useState<number>(2.0);
-  const [estimatedCost, setEstimatedCost] = useState<number>(250);
+  const [estimatedHours, setEstimatedHours] = useState<string>("");
+  const [estimatedCost, setEstimatedCost] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Initialize only when modal opens (do NOT re-run on background polling updates)
   useEffect(() => {
     if (isOpen) {
       if (preselectedMachineId) {
         setSelectedMachineId(preselectedMachineId);
-      } else if (machines.length > 0) {
-        setSelectedMachineId(machines[0].id);
+      } else {
+        setSelectedMachineId("");
       }
-
-      // Default date: tomorrow
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      setScheduledDate(tomorrow.toISOString().split("T")[0]);
-      setTechnician("Viktor Vance (Chief Mech Tech)");
-      setDescription("Routine multi-point lubrication, sensor calibration & drive alignment check.");
+      setScheduledDate("");
+      setTechnician("");
+      setDescription("");
+      setEstimatedHours("");
+      setEstimatedCost("");
+      setMaintenanceType("Preventive");
       setError("");
       setIsSubmitting(false);
     }
-  }, [isOpen, preselectedMachineId, machines]);
+  }, [isOpen, preselectedMachineId]);
 
   if (!isOpen) return null;
 
@@ -71,11 +71,11 @@ export function ScheduleMaintenanceModal({
       return;
     }
     if (!technician.trim()) {
-      setError("Please assign a technician name.");
+      setError("Please enter the assigned technician name.");
       return;
     }
     if (!description.trim()) {
-      setError("Please describe the maintenance scope.");
+      setError("Please describe the maintenance scope and work details.");
       return;
     }
 
@@ -120,7 +120,7 @@ export function ScheduleMaintenanceModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -143,8 +143,11 @@ export function ScheduleMaintenanceModal({
             <select
               value={selectedMachineId}
               onChange={(e) => setSelectedMachineId(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer"
             >
+              <option value="" disabled className="text-slate-500">
+                -- Select Target Machine --
+              </option>
               {machines.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.machineCode} — {m.machineName} ({m.status} | Risk: {m.riskScore}%)
@@ -182,7 +185,7 @@ export function ScheduleMaintenanceModal({
                     key={type}
                     type="button"
                     onClick={() => setMaintenanceType(type)}
-                    className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all text-center ${
+                    className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all text-center cursor-pointer ${
                       isSelected
                         ? "bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-sm"
                         : "bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
@@ -204,6 +207,7 @@ export function ScheduleMaintenanceModal({
               <div className="relative">
                 <input
                   type="date"
+                  placeholder="YYYY-MM-DD"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
@@ -219,7 +223,7 @@ export function ScheduleMaintenanceModal({
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="Technician name..."
+                  placeholder="e.g. Viktor Vance (Chief Mech Tech)"
                   value={technician}
                   onChange={(e) => setTechnician(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
@@ -241,8 +245,9 @@ export function ScheduleMaintenanceModal({
                   step="0.5"
                   min="0.5"
                   max="48"
+                  placeholder="e.g. 2.0"
                   value={estimatedHours}
-                  onChange={(e) => setEstimatedHours(Number(e.target.value))}
+                  onChange={(e) => setEstimatedHours(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
                 />
                 <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -258,8 +263,9 @@ export function ScheduleMaintenanceModal({
                   type="number"
                   step="25"
                   min="0"
+                  placeholder="e.g. 250"
                   value={estimatedCost}
-                  onChange={(e) => setEstimatedCost(Number(e.target.value))}
+                  onChange={(e) => setEstimatedCost(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
                 />
                 <IndianRupee className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -275,7 +281,7 @@ export function ScheduleMaintenanceModal({
             <div className="relative">
               <textarea
                 rows={3}
-                placeholder="Detail the planned actions, replacement parts, and inspection points..."
+                placeholder="e.g. Multi-point lubrication, sensor calibration & drive alignment check..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full p-3 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors resize-none"
