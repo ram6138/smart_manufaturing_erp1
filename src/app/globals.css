@@ -196,10 +196,18 @@ input:focus, select:focus, textarea:focus {
   outline: none;
 }
 
-/* Custom Clean Light Scrollbar */
+/* =========================================================
+   Custom Visible Vertical Scrollbar (Cross-Browser)
+   ========================================================= */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+/* Global Webkit Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -209,14 +217,21 @@ input:focus, select:focus, textarea:focus {
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
+  border: 1.5px solid #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
+/* Specific Custom Scrollbar Class */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -224,12 +239,33 @@ input:focus, select:focus, textarea:focus {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #cbd5e1;
+  background: #94a3b8;
+}
+
+/* Dark Container / Chatbot Popups Scrollbar */
+div[style*="background-color: #0b0f19"] ::-webkit-scrollbar-track,
+div[style*="background-color: rgb(11, 15, 25)"] ::-webkit-scrollbar-track,
+.bg-slate-950 ::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+div[style*="background-color: #0b0f19"] ::-webkit-scrollbar-thumb,
+div[style*="background-color: rgb(11, 15, 25)"] ::-webkit-scrollbar-thumb,
+.bg-slate-950 ::-webkit-scrollbar-thumb {
+  background: #334155;
+  border: 1px solid #0f172a;
+  border-radius: 9999px;
+}
+
+div[style*="background-color: #0b0f19"] ::-webkit-scrollbar-thumb:hover,
+div[style*="background-color: rgb(11, 15, 25)"] ::-webkit-scrollbar-thumb:hover,
+.bg-slate-950 ::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
 }
 
 /* =========================================================
