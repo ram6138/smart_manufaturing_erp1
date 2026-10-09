@@ -8,6 +8,7 @@ import {
   ProductName,
   PRODUCT_NAMES,
   DefectTypeName,
+  QUALITY_INSPECTORS,
 } from "@/types/quality";
 import {
   X,
@@ -136,7 +137,7 @@ export function NewInspectionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-6 max-h-[92vh] flex flex-col">
+      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-6 max-h-[88vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -159,7 +160,7 @@ export function NewInspectionModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4 text-xs overflow-y-auto flex-1 pr-1">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4 text-xs overflow-y-auto flex-1 pr-2 custom-scrollbar">
           {/* Production Order & Product */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -230,13 +231,18 @@ export function NewInspectionModal({
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                 Assigned Inspector *
               </label>
-              <input
-                type="text"
+              <select
                 value={inspectorName}
                 onChange={(e) => setInspectorName(e.target.value)}
-                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-cyan-500"
+                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-200 text-xs focus:outline-none focus:border-cyan-500 cursor-pointer"
                 required
-              />
+              >
+                {QUALITY_INSPECTORS.map((insp) => (
+                  <option key={insp} value={insp}>
+                    {insp} (Certified QA)
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

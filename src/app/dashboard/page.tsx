@@ -32,6 +32,9 @@ export default function DashboardPage() {
   const [inventoryAlerts, setInventoryAlerts] = useState(INVENTORY_ALERTS_DATA);
   const [recentActivities, setRecentActivities] = useState(RECENT_ACTIVITY_DATA);
   const [productionOrders, setProductionOrders] = useState(RECENT_PRODUCTION_ORDERS);
+  const [machineStatus, setMachineStatus] = useState(MACHINE_STATUS_DATA);
+  const [qualityOverview, setQualityOverview] = useState(QUALITY_OVERVIEW_DATA);
+  const [aiInsights, setAiInsights] = useState(AI_OPERATIONS_INSIGHTS);
   const [isDbLive, setIsDbLive] = useState<boolean>(false);
 
   const fetchDashboardData = useCallback(async (isMounted?: () => boolean) => {
@@ -53,6 +56,15 @@ export default function DashboardPage() {
         }
         if (data.productionOrders && data.productionOrders.length > 0) {
           setProductionOrders(data.productionOrders);
+        }
+        if (data.machineStatusData && data.machineStatusData.length > 0) {
+          setMachineStatus(data.machineStatusData);
+        }
+        if (data.qualityOverviewData) {
+          setQualityOverview(data.qualityOverviewData);
+        }
+        if (data.aiInsightsData && data.aiInsightsData.length > 0) {
+          setAiInsights(data.aiInsightsData);
         }
         setIsDbLive(true);
       }
@@ -123,17 +135,17 @@ export default function DashboardPage() {
 
         {/* 9. AI Operations Insights (High-Priority Anomaly Detection & Advice) */}
         <section aria-label="AI Operations Insights">
-          <AIOperationsInsights insights={AI_OPERATIONS_INSIGHTS} />
+          <AIOperationsInsights insights={aiInsights} />
         </section>
 
         {/* 5 & 6. Machine Status & Quality Overview Row */}
         <section aria-label="Machines and Quality">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             <div className="lg:col-span-6">
-              <MachineStatusCard machines={MACHINE_STATUS_DATA} />
+              <MachineStatusCard machines={machineStatus} />
             </div>
             <div className="lg:col-span-6">
-              <QualityOverview data={QUALITY_OVERVIEW_DATA} />
+              <QualityOverview data={qualityOverview} />
             </div>
           </div>
         </section>

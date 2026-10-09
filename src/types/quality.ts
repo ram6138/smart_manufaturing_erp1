@@ -115,11 +115,26 @@ export interface ProductQualityComparison {
   defectCount: number;
 }
 
+export const QUALITY_INSPECTORS = [
+  "Elena Rostova",
+  "Marcus Brody",
+  "David Chen",
+  "Anita Sharma",
+  "Viktor Vance",
+  "Aarav Patel",
+  "Mei Ling",
+  "Carlos Mendez",
+  "Raju",
+] as const;
+
+export type QualityInspectorName = (typeof QUALITY_INSPECTORS)[number];
+
 // Filter State
 export interface QualityFilterState {
   searchQuery: string;
   product: string; // "all" | ProductName
   status: string; // "all" | InspectionStatus
   defectType: string; // "all" | DefectTypeName
+  inspector: string; // "all" | QualityInspectorName | string
   dateRange: string; // "all" | "today" | "7days" | "30days"
 }

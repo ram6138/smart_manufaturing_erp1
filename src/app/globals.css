@@ -131,18 +131,20 @@ a[class*="from-blue-"] {
    ========================================================= */
 
 h1, h2, h3, h4, h5, h6 {
-  color: #0f172a;
+  color: inherit;
 }
 
-/* Card titles, headers, and KPI numbers default to crisp dark slate */
-.text-white:not(button):not(button *):not(a.bg-gradient-to-r *):not(a.bg-cyan-600 *):not([class*="bg-cyan-6"]):not([class*="bg-blue-6"]):not([class*="bg-emerald-6"]):not([class*="bg-rose-6"]):not([class*="bg-amber-6"]):not([class*="bg-purple-6"]):not([class*="bg-indigo-6"]):not([class*="bg-gradient-to-"]) {
-  color: #0f172a;
-}
-
-/* Specific colored pills retain white text */
+/* Specific colored pills and dark surfaces retain crisp white text */
+.text-white,
 button.text-white,
 button .text-white,
 button span.text-white,
+[class*="bg-slate-9"] .text-white,
+[class*="bg-slate-8"] .text-white,
+[class*="bg-indigo-9"] .text-white,
+[class*="bg-slate-9"] h1, [class*="bg-slate-9"] h2, [class*="bg-slate-9"] h3, [class*="bg-slate-9"] h4,
+[class*="bg-slate-8"] h1, [class*="bg-slate-8"] h2, [class*="bg-slate-8"] h3, [class*="bg-slate-8"] h4,
+[class*="bg-indigo-9"] h1, [class*="bg-indigo-9"] h2, [class*="bg-indigo-9"] h3, [class*="bg-indigo-9"] h4,
 a[class*="from-cyan-"] .text-white,
 div[class*="from-cyan-"] .text-white,
 div[class*="from-blue-"] .text-white,
@@ -152,6 +154,9 @@ div[class*="from-amber-"] .text-white,
 div[class*="from-rose-"] .text-white,
 span[class*="bg-cyan-600"] .text-white,
 [class*="bg-gradient-to-"] .text-white,
+[class*="bg-gradient-to-"] h1,
+[class*="bg-gradient-to-"] h2,
+[class*="bg-gradient-to-"] h3,
 [class*="bg-cyan-600"] .text-white,
 [class*="bg-blue-600"] .text-white,
 [class*="bg-emerald-600"] .text-white,
@@ -201,7 +206,7 @@ input:focus, select:focus, textarea:focus {
    ========================================================= */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 #f8fafc;
+  scrollbar-color: #94a3b8 #f1f5f9;
 }
 
 /* Global Webkit Scrollbar */
@@ -215,36 +220,39 @@ input:focus, select:focus, textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #94a3b8;
   border-radius: 9999px;
   border: 1.5px solid #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #64748b;
 }
 
 /* Specific Custom Scrollbar Class */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-color: #94a3b8 #f1f5f9;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #f1f5f9;
   border-radius: 9999px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb {
   background: #94a3b8;
+  border-radius: 9999px;
+  border: 1.5px solid #f1f5f9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Dark Container / Chatbot Popups Scrollbar */

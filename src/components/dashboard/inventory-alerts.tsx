@@ -64,7 +64,7 @@ export function InventoryAlerts({ items }: InventoryAlertsProps) {
           </p>
         </div>
         <span className="text-xs font-mono text-amber-400 font-semibold">
-          3 Need Restock
+          {items.filter((i) => i.status !== "Healthy").length} Need Restock
         </span>
       </div>
 

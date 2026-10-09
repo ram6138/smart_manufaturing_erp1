@@ -99,7 +99,6 @@ async function callGemini(prompt: string, contextPrompt: string, history: Array<
       parts: [{ text: h.text }]
     });
   }
-
   contents.push({
     role: 'user',
     parts: [{

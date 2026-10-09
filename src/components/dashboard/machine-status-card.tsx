@@ -66,7 +66,7 @@ export function MachineStatusCard({ machines }: MachineStatusCardProps) {
           </p>
         </div>
         <span className="text-xs font-mono text-cyan-400/80">
-          5 Assets Monitored
+          {machines.length} Assets Monitored
         </span>
       </div>
 

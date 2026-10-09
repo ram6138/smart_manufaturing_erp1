@@ -95,10 +95,10 @@ export function ProductionOrdersTable({ orders }: ProductionOrdersTableProps) {
         </div>
 
         <Link
-          href="/orders"
+          href="/production"
           className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition"
         >
-          <span>View All Orders</span>
+          <span>View All Production Orders</span>
           <ArrowUpRight className="w-3.5 h-3.5" />
         </Link>
       </div>

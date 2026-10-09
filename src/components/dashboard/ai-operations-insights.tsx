@@ -76,7 +76,7 @@ export function AIOperationsInsights({ insights }: AIOperationsInsightsProps) {
         </div>
 
         <span className="text-xs font-mono text-cyan-400/90">
-          3 Actionable Insights
+          {insights.length} Actionable Insight{insights.length !== 1 ? 's' : ''}
         </span>
       </div>
 

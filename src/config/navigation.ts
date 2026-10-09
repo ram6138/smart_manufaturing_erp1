@@ -86,6 +86,23 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
     ],
   },
   {
+    title: "Digital Twin",
+    href: "/digital-twin",
+    icon: Sparkles,
+    badge: "AI Simulator",
+    badgeColor: "bg-cyan-500/15 text-cyan-700 border-cyan-300",
+    description: "What-If simulation, downtime & capacity testing",
+    allowedRoles: [
+      "Admin",
+      "Factory Manager",
+      "Production Manager",
+      "Maintenance Manager",
+      "Quality Manager",
+      "Inventory Manager",
+      "Finance Manager",
+    ],
+  },
+  {
     title: "Machines & Maintenance",
     href: "/machines",
     icon: Wrench,

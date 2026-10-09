@@ -8,7 +8,7 @@ const globalForPg = globalThis as unknown as { pgPool: Pool };
 export const pool =
   globalForPg.pgPool ||
   new Pool({
-    connectionString,
+    connectionString: process.env.DATABASE_URL,
     max: 20, // Maximum active connections
     idleTimeoutMillis: 30000, // Close idle clients after 30s
     connectionTimeoutMillis: 5000, // Timeout after 5s if unable to connect

@@ -58,7 +58,7 @@ export function ProductProductionChart({ data }: ProductProductionChartProps) {
           </p>
         </div>
         <span className="text-xs font-mono text-cyan-400/80 self-start sm:self-auto">
-          6 SKUs Active
+          {data.length} SKUs Active
         </span>
       </div>
 

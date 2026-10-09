@@ -144,6 +144,7 @@ export default function QualityPage() {
     product: "all",
     status: "all",
     defectType: "all",
+    inspector: "all",
     dateRange: "all",
   });
 
@@ -194,6 +195,15 @@ export default function QualityPage() {
         if (!hasDefectType) return false;
       }
 
+      // Inspector
+      if (filters.inspector && filters.inspector !== "all") {
+        const itemInspector = (item.inspectorName || "").toLowerCase();
+        const targetInspector = filters.inspector.toLowerCase();
+        if (!itemInspector.includes(targetInspector)) {
+          return false;
+        }
+      }
+
       // Date Range
       if (filters.dateRange !== "all") {
         const itemDate = new Date(item.inspectionDate);
@@ -228,13 +238,12 @@ export default function QualityPage() {
     setIsUpdateIssueModalOpen(true);
   };
 
-  const handleInvestigateDefect = (defect: QualityDefect) => {
+  const handleInvestigateDefect = async (defect: QualityDefect) => {
     setDefects((prev) =>
       prev.map((d) =>
         d.id === defect.id ? { ...d, status: "Investigating" as DefectStatus } : d
       )
     );
-    // Also update in inspections if nested
     setInspections((prev) =>
       prev.map((i) => ({
         ...i,
@@ -245,15 +254,28 @@ export default function QualityPage() {
     );
     setToastMessage(`Defect ${defect.qualityDefectId} status set to Investigating`);
     setTimeout(() => setToastMessage(null), 3500);
+
+    try {
+      await fetch("/api/quality", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inspectionId: defect.inspectionId,
+          defectId: defect.id,
+          status: "Investigating",
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to persist defect status update:", e);
+    }
   };
 
-  const handleResolveDefect = (defect: QualityDefect) => {
+  const handleResolveDefect = async (defect: QualityDefect) => {
     setDefects((prev) =>
       prev.map((d) =>
         d.id === defect.id ? { ...d, status: "Resolved" as DefectStatus } : d
       )
     );
-    // Also update in inspections if nested
     setInspections((prev) =>
       prev.map((i) => ({
         ...i,
@@ -264,9 +286,23 @@ export default function QualityPage() {
     );
     setToastMessage(`Defect ${defect.qualityDefectId} successfully marked as Resolved`);
     setTimeout(() => setToastMessage(null), 3500);
+
+    try {
+      await fetch("/api/quality", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inspectionId: defect.inspectionId,
+          defectId: defect.id,
+          status: "Resolved",
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to persist defect resolve update:", e);
+    }
   };
 
-  const handleSaveDefectUpdate = (updatedDefect: QualityDefect) => {
+  const handleSaveDefectUpdate = async (updatedDefect: QualityDefect) => {
     setDefects((prev) =>
       prev.map((d) => (d.id === updatedDefect.id ? updatedDefect : d))
     );
@@ -280,9 +316,27 @@ export default function QualityPage() {
     );
     setToastMessage(`CAPA record for ${updatedDefect.qualityDefectId} updated successfully`);
     setTimeout(() => setToastMessage(null), 3500);
+
+    try {
+      await fetch("/api/quality", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inspectionId: updatedDefect.inspectionId,
+          defectId: updatedDefect.id,
+          status: updatedDefect.status,
+          rootCause: updatedDefect.rootCause,
+          correctiveAction: updatedDefect.correctiveAction,
+          severity: updatedDefect.severity,
+          assignedEngineer: updatedDefect.assignedEngineer,
+        }),
+      });
+    } catch (e) {
+      console.error("Failed to persist CAPA update:", e);
+    }
   };
 
-  const handleCreateInspection = (
+  const handleCreateInspection = async (
     newInspection: QualityInspection,
     newDefect?: QualityDefect
   ) => {
@@ -292,6 +346,45 @@ export default function QualityPage() {
     }
     setToastMessage(`Inspection ${newInspection.inspectionNumber} recorded successfully!`);
     setTimeout(() => setToastMessage(null), 4000);
+
+    try {
+      const res = await fetch("/api/quality", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productionOrderId: newInspection.productionOrderId,
+          productName: newInspection.product,
+          batchNumber: newInspection.batchNumber,
+          inspectorName: newInspection.inspectorName,
+          inspectedQuantity: newInspection.inspectedQuantity,
+          passedQuantity: newInspection.passedQuantity,
+          failedQuantity: newInspection.failedQuantity,
+          status: newInspection.status,
+          notes: newInspection.notes,
+          defectType: newDefect?.defectType || "None",
+          defectSeverity: newDefect?.severity || "None",
+          rootCause: newDefect?.rootCause || "",
+          correctiveAction: newDefect?.correctiveAction || "",
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === "success" && data.inspectionId) {
+          // Re-sync with fresh database records
+          fetch("/api/quality", { cache: "no-store" })
+            .then((r) => r.json())
+            .then((fresh) => {
+              if (fresh.status === "success" && fresh.inspections?.length > 0) {
+                // state will be automatically updated
+              }
+            })
+            .catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.error("Failed to persist inspection to backend:", e);
+    }
   };
 
   const [activeKpiCard, setActiveKpiCard] = useState<string | undefined>(undefined);
@@ -419,6 +512,7 @@ export default function QualityPage() {
                 product: "all",
                 status: "all",
                 defectType: "all",
+                inspector: "all",
                 dateRange: "all",
               })
             }

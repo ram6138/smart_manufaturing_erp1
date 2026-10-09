@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { QualityFilterState, PRODUCT_NAMES, DefectTypeName } from "@/types/quality";
+import { QualityFilterState, PRODUCT_NAMES, DefectTypeName, QUALITY_INSPECTORS } from "@/types/quality";
 import {
   Search,
   RotateCcw,
@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Package,
+  User,
 } from "lucide-react";
 
 interface QualityFiltersProps {
@@ -39,13 +40,14 @@ export function QualityFilters({
     filters.product !== "all" ||
     filters.status !== "all" ||
     filters.defectType !== "all" ||
+    (filters.inspector && filters.inspector !== "all") ||
     filters.dateRange !== "all";
 
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 backdrop-blur-sm shadow-md space-y-4">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Search Input */}
-        <div className="relative flex-1 min-w-[260px]">
+        <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
@@ -57,7 +59,7 @@ export function QualityFilters({
         </div>
 
         {/* Filter Dropdowns */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
           {/* Product Filter */}
           <div className="relative">
             <select
@@ -89,6 +91,25 @@ export function QualityFilters({
               <option value="Failed">Failed</option>
               <option value="Conditional">Conditional</option>
               <option value="Pending">Pending</option>
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-[10px]">
+              ▼
+            </div>
+          </div>
+
+          {/* Inspector Filter */}
+          <div className="relative">
+            <select
+              value={filters.inspector || "all"}
+              onChange={(e) => onFilterChange({ inspector: e.target.value })}
+              className="w-full px-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-cyan-500 appearance-none cursor-pointer pr-8"
+            >
+              <option value="all">All Inspectors</option>
+              {QUALITY_INSPECTORS.map((insp) => (
+                <option key={insp} value={insp}>
+                  {insp}
+                </option>
+              ))}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 text-[10px]">
               ▼

@@ -50,7 +50,7 @@ export function QualityOverview({ data }: QualityOverviewProps) {
           </p>
         </div>
         <span className="text-xs font-mono text-emerald-400 font-semibold">
-          97.2% Pass Rate
+          {(100 - (data.rejectionRate || 0)).toFixed(1)}% Pass Rate
         </span>
       </div>
 
@@ -65,7 +65,9 @@ export function QualityOverview({ data }: QualityOverviewProps) {
           <p className="text-lg font-bold text-white font-mono">
             {data.passedInspections.toLocaleString()}
           </p>
-          <span className="text-[10px] text-emerald-400 font-medium">97.2% of checks</span>
+          <span className="text-[10px] text-emerald-400 font-medium">
+            {(100 - (data.rejectionRate || 0)).toFixed(1)}% of checks
+          </span>
         </div>
 
         {/* Failed */}
