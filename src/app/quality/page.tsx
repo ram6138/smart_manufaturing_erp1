@@ -38,9 +38,9 @@ import {
 } from "lucide-react";
 
 export default function QualityPage() {
-  const [inspections, setInspections] = useState<QualityInspection[]>([]);
-  const [defects, setDefects] = useState<QualityDefect[]>([]);
-  const [anomalies, setAnomalies] = useState<QualityAnomaly[]>([]);
+  const [inspections, setInspections] = useState<QualityInspection[]>(INITIAL_INSPECTIONS);
+  const [defects, setDefects] = useState<QualityDefect[]>(INITIAL_DEFECTS);
+  const [anomalies, setAnomalies] = useState<QualityAnomaly[]>(INITIAL_ANOMALIES);
 
   useEffect(() => {
     let isMounted = true;
@@ -49,27 +49,78 @@ export default function QualityPage() {
         const res = await fetch("/api/quality", { cache: "no-store" });
         if (res.ok && isMounted) {
           const data = await res.json();
-          if (data.status === "success" && isMounted) {
-            setInspections(data.inspections || []);
-            // Derive defects from live inspections
-            if (data.inspections?.length > 0) {
-              const liveDefects = data.inspections
-                .filter((i: any) => i.defectiveQuantity > 0)
-                .map((i: any) => ({
+          if (data.status === "success" && isMounted && data.inspections?.length > 0) {
+            const transformedInspections: QualityInspection[] = data.inspections.map((i: any) => {
+              const prodName = (i.product || i.productName || 'Chocolate Biscuit') as ProductName;
+              const inspNum = i.inspectionNumber || i.inspectionId || `INS-${String(i.id).padStart(4, '0')}`;
+              const poId = i.productionOrderId || (i.batchNumber ? `PO-${i.batchNumber.replace('BAT-', '')}` : 'PO-2026-001');
+              const defQuantity = Number(i.defectiveQuantity ?? i.failedQuantity ?? 0);
+              const inspectedQty = Number(i.inspectedQuantity || 0);
+              const passedQty = Number(i.passedQuantity || (inspectedQty - defQuantity));
+
+              let statusNorm: "Passed" | "Failed" | "Conditional" | "Pending" = "Passed";
+              const sRaw = (i.status || '').toLowerCase();
+              if (sRaw.includes('fail') || sRaw.includes('reject')) {
+                statusNorm = "Failed";
+              } else if (sRaw.includes('conditional') || sRaw.includes('review') || sRaw.includes('note')) {
+                statusNorm = "Conditional";
+              } else if (sRaw.includes('pending')) {
+                statusNorm = "Pending";
+              } else {
+                statusNorm = "Passed";
+              }
+
+              const itemDefects: QualityDefect[] = [];
+              if (defQuantity > 0) {
+                itemDefects.push({
                   id: `defect_${i.id}`,
-                  productName: i.productName,
-                  productCode: i.productCode,
-                  defectType: i.defectType || 'Quality Variance',
-                  severity: i.severity || 'Medium',
-                  occurrenceCount: i.defectCount || 1,
-                  affectedBatch: i.batchNumber,
-                  detectedAt: i.inspectionDate,
-                  status: i.status === 'Passed' ? 'Closed' : 'Open',
-                  assignedTo: i.inspectorName,
-                  rootCause: i.rootCause,
-                  correctiveAction: i.correctiveAction,
-                }));
-              setDefects(liveDefects);
+                  qualityDefectId: `DEF-2026-${String(i.id).padStart(4, '0')}`,
+                  inspectionId: String(i.id),
+                  inspectionNumber: inspNum,
+                  productionOrderId: poId,
+                  product: prodName,
+                  batchNumber: i.batchNumber || 'BAT-2026-001',
+                  defectType: (i.defectType && i.defectType !== 'None' ? i.defectType : 'Quality Variance') as any,
+                  defectQuantity: defQuantity,
+                  severity: (i.severity && i.severity !== 'None' ? i.severity : 'Medium') as any,
+                  rootCause: i.rootCause || 'Under investigation',
+                  correctiveAction: i.correctiveAction || 'Quality hold and calibration',
+                  status: (statusNorm === 'Passed' ? 'Closed' : 'Open') as DefectStatus,
+                  detectedAt: i.inspectionDate || new Date().toISOString(),
+                  assignedEngineer: i.inspectorName || 'Elena Rostova (QA Lead)',
+                });
+              }
+
+              return {
+                id: String(i.id),
+                inspectionId: i.inspectionId || `INS-${String(i.id).padStart(4, '0')}`,
+                inspectionNumber: inspNum,
+                productionOrderId: poId,
+                product: prodName,
+                batchNumber: i.batchNumber || 'BAT-2026-001',
+                inspectionDate: i.inspectionDate || new Date().toISOString(),
+                inspectorEmployeeId: i.inspectorEmployeeId || 'EMP-QA-01',
+                inspectorName: i.inspectorName || 'Anita Sharma (QA Lead)',
+                inspectedQuantity: inspectedQty,
+                passedQuantity: passedQty,
+                failedQuantity: defQuantity,
+                status: statusNorm,
+                notes: i.correctiveAction || i.rootCause || '',
+                defects: itemDefects,
+              };
+            });
+
+            setInspections(transformedInspections);
+
+            // Derive all active defects
+            const allDefects: QualityDefect[] = [];
+            transformedInspections.forEach((insp) => {
+              if (insp.defects && insp.defects.length > 0) {
+                allDefects.push(...insp.defects);
+              }
+            });
+            if (allDefects.length > 0) {
+              setDefects(allDefects);
             }
           }
         }
@@ -79,13 +130,11 @@ export default function QualityPage() {
     }
 
     loadData();
-    const interval = setInterval(loadData, 4000);
-    window.addEventListener("focus", loadData);
+    const interval = setInterval(loadData, 5000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
-      window.removeEventListener("focus", loadData);
     };
   }, []);
 
@@ -118,12 +167,12 @@ export default function QualityPage() {
     return inspections.filter((item) => {
       // Search
       if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase();
-        const matchesNum = item.inspectionNumber.toLowerCase().includes(query);
-        const matchesPo = item.productionOrderId.toLowerCase().includes(query);
-        const matchesBatch = item.batchNumber.toLowerCase().includes(query);
-        const matchesInspector = item.inspectorName.toLowerCase().includes(query);
-        const matchesProduct = item.product.toLowerCase().includes(query);
+        const query = filters.searchQuery.toLowerCase().trim();
+        const matchesNum = (item.inspectionNumber || "").toLowerCase().includes(query);
+        const matchesPo = (item.productionOrderId || "").toLowerCase().includes(query);
+        const matchesBatch = (item.batchNumber || "").toLowerCase().includes(query);
+        const matchesInspector = (item.inspectorName || "").toLowerCase().includes(query);
+        const matchesProduct = (item.product || "").toLowerCase().includes(query);
         if (!matchesNum && !matchesPo && !matchesBatch && !matchesInspector && !matchesProduct) {
           return false;
         }
@@ -141,7 +190,7 @@ export default function QualityPage() {
 
       // Defect Type (matches if inspection contains a defect of that type)
       if (filters.defectType !== "all") {
-        const hasDefectType = item.defects.some((d) => d.defectType === filters.defectType);
+        const hasDefectType = (item.defects || []).some((d) => d.defectType === filters.defectType);
         if (!hasDefectType) return false;
       }
 
