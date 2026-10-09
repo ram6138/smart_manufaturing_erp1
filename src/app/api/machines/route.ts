@@ -404,6 +404,14 @@ export async function POST(req: Request) {
     if (action === 'scheduleMaintenance') {
       const { machineId, maintenanceDate, type = 'Preventive', notes, technician = 'Lead Technician' } = body;
 
+      let cleanId: number = 1;
+      if (typeof machineId === 'number' && !isNaN(machineId)) {
+        cleanId = machineId;
+      } else if (typeof machineId === 'string') {
+        const parsed = parseInt(machineId.replace(/\D/g, ''), 10);
+        if (!isNaN(parsed) && parsed > 0) cleanId = parsed;
+      }
+
       const firstShift = await query(`SELECT shift_id FROM shifts LIMIT 1;`);
       const shiftId = firstShift.rows.length > 0 ? firstShift.rows[0].shift_id : 1;
 
@@ -413,7 +421,7 @@ export async function POST(req: Request) {
         VALUES 
           ($1, $2, $3, $4, $5, true, 60)
         RETURNING maintenance_record_id;
-      `, [machineId, maintenanceDate || new Date().toISOString().split('T')[0], shiftId, type, notes || 'Scheduled maintenance']);
+      `, [cleanId, maintenanceDate || new Date().toISOString().split('T')[0], shiftId, type, notes || 'Scheduled maintenance']);
 
       return NextResponse.json({
         status: 'success',
@@ -439,20 +447,44 @@ export async function POST(req: Request) {
     }
 
     if (action === 'updateStatus') {
-      const { machineId, status } = body;
+      const { machineId, machineCode, status } = body;
       const validStatuses = ['Running', 'Idle', 'Maintenance', 'Warning'];
       const targetStatus = validStatuses.includes(status) ? status : 'Running';
 
-      await query(`
-        UPDATE machines 
-        SET status = $1
-        WHERE machine_id = $2;
-      `, [targetStatus, machineId]);
+      let cleanId: number | null = null;
+      if (typeof machineId === 'number' && !isNaN(machineId)) {
+        cleanId = machineId;
+      } else if (typeof machineId === 'string') {
+        const parsed = parseInt(machineId.replace(/\D/g, ''), 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          cleanId = parsed;
+        }
+      }
+
+      if (cleanId) {
+        await query(`
+          UPDATE machines 
+          SET status = $1
+          WHERE machine_id = $2;
+        `, [targetStatus, cleanId]);
+      } else if (machineCode || typeof machineId === 'string') {
+        const targetCode = machineCode || machineId;
+        await query(`
+          UPDATE machines 
+          SET status = $1
+          WHERE LOWER(machine_code) = LOWER($2) OR LOWER(machine_name) = LOWER($2);
+        `, [targetStatus, targetCode]);
+      } else {
+        return NextResponse.json({
+          status: 'error',
+          message: 'Valid machineId or machineCode is required to update status.',
+        }, { status: 400 });
+      }
 
       return NextResponse.json({
         status: 'success',
         message: `Machine status updated to ${targetStatus}`,
-        machineId,
+        machineId: cleanId || machineId,
         newStatus: targetStatus,
       });
     }
