@@ -14,25 +14,23 @@ const BOM_RECIPES: Record<string, { flourKg: number; sugarKg: number; fatKg: num
   'salted': { flourKg: 270, sugarKg: 30, fatKg: 50, flavorKg: 25, flavorName: 'Refined Salt & Herb', packMeters: 200 },
 };
 
+let cachedWorkingModel: string | null = null;
+
 async function callGemini(prompt: string, contextPrompt: string, history: Array<{ sender: string; text: string }>) {
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey || apiKey.trim() === '') return null;
 
-  // Modern candidate models supported by Gemini API
-  const candidateModels = [
-    'gemini-2.5-flash',
-    'gemini-3.8-flash',
-    'gemini-3.5-flash',
-    'gemini-flash-latest',
-    'gemini-3.1-flash-lite',
-    'gemini-1.5-flash'
-  ];
+  // Candidate models in prioritized order
+  const candidateModels = cachedWorkingModel 
+    ? [cachedWorkingModel, 'gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'] 
+    : ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-1.5-flash'];
+
+  // Remove duplicates
+  const uniqueModels = Array.from(new Set(candidateModels));
 
   // Format conversational contents
   const contents: any[] = [];
-  
-  // Convert recent history
-  const recentHistory = history.slice(-4);
+  const recentHistory = history.slice(-3);
   for (const h of recentHistory) {
     contents.push({
       role: h.sender === 'user' ? 'user' : 'model',
@@ -40,15 +38,14 @@ async function callGemini(prompt: string, contextPrompt: string, history: Array<
     });
   }
 
-  // Append user's current message with live factory database injected
   contents.push({
     role: 'user',
     parts: [{
-      text: `${contextPrompt}\n\nUser Question: "${prompt}"\n\nPlease provide a clear, professional, markdown-formatted response with exact numbers, machine assignments, and actionable manufacturing guidance.`
+      text: `${contextPrompt}\n\nUser Question: "${prompt}"\n\nPlease provide a direct, concise, markdown-formatted response with exact numbers, machine names, and actionable manufacturing advice.`
     }]
   });
 
-  for (const model of candidateModels) {
+  for (const model of uniqueModels) {
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
       const res = await fetch(url, {
@@ -57,21 +54,24 @@ async function callGemini(prompt: string, contextPrompt: string, history: Array<
         body: JSON.stringify({
           contents,
           generationConfig: {
-            temperature: 0.3,
-            maxOutputTokens: 1200,
+            temperature: 0.2,
+            maxOutputTokens: 800,
           }
-        })
+        }),
+        signal: AbortSignal.timeout(2800) // Strict 2.8s timeout so user never waits
       });
 
       if (res.ok) {
         const data = await res.json();
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text && text.trim().length > 0) {
+          cachedWorkingModel = model; // Cache the successful model
           return { text: text.trim(), model };
         }
       }
-    } catch (err) {
-      console.warn(`Gemini model ${model} attempt failed:`, err);
+    } catch {
+      // Gracefully continue to next model or fallback without flooding terminal logs
+      continue;
     }
   }
 
