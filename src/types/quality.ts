@@ -30,7 +30,6 @@ export interface DefectType {
   description: string;
   severity: DefectSeverity;
 }
-
 // Maps to `quality_defects` table
 export interface QualityDefect {
   id: string;

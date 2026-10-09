@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopHeader } from "@/components/layout/top-header";
+import { ManufacturingCopilot } from "@/components/chatbot/manufacturing-copilot";
 import { X } from "lucide-react";
 
 interface ErpLayoutProps {
@@ -54,6 +55,9 @@ export function ErpLayout({ children }: ErpLayoutProps) {
             <div className="max-w-7xl mx-auto space-y-6">{children}</div>
           </main>
         </div>
+
+        {/* Global Floating AI Copilot Chatbot */}
+        <ManufacturingCopilot />
       </div>
     </ProtectedRoute>
   );
