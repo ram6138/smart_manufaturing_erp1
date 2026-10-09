@@ -15,22 +15,84 @@ const BOM_RECIPES: Record<string, { flourKg: number; sugarKg: number; fatKg: num
 };
 
 let cachedWorkingModel: string | null = null;
+let cachedSnapshot: { timestamp: number; data: any } | null = null;
+
+async function getFactorySnapshot() {
+  const now = Date.now();
+  if (cachedSnapshot && now - cachedSnapshot.timestamp < 5000) {
+    return cachedSnapshot.data;
+  }
+
+  const [machinesRes, stockRes, ordersRes, qualityRes, shiftsRes] = await Promise.allSettled([
+    query(`
+      SELECT 
+        m.machine_id, m.machine_code, m.machine_name, COALESCE(m.status, 'Running') as status, 
+        COALESCE(mt.machine_type_name, 'Industrial Equipment') as "machineType",
+        COALESCE(m.machine_age_years * 2000, 4200)::int as "operatingHours",
+        'Line 1 - Bay A' as location
+      FROM machines m
+      LEFT JOIN machine_types mt ON m.machine_type_id = mt.machine_type_id
+      ORDER BY m.machine_id ASC;
+    `),
+    query(`
+      SELECT 
+        s.inventory_stock_id, p.product_name, p.product_code, 
+        COALESCE(c.category_name, 'General') as category,
+        COALESCE(s.current_quantity, 0)::float as "quantityOnHand",
+        COALESCE(s.reorder_level, 0)::float as "reorderLevel",
+        COALESCE(p.unit, 'kg') as unit
+      FROM inventory_stock s
+      JOIN products p ON s.product_id = p.product_id
+      LEFT JOIN product_categories c ON p.category_id = c.category_id
+      ORDER BY p.product_name ASC;
+    `),
+    query(`
+      SELECT 
+        po.production_order_id, po.batch_number, p.product_name, 
+        COALESCE(po.planned_quantity, 0)::float as planned_quantity, 
+        COALESCE(po.actual_quantity, 0)::float as actual_quantity, 
+        COALESCE(po.production_status, 'Planned') as production_status,
+        COALESCE(po.production_efficiency_pct, 95.0)::float as production_efficiency_pct
+      FROM production_orders po
+      LEFT JOIN products p ON po.product_id = p.product_id
+      ORDER BY po.production_order_id DESC
+      LIMIT 8;
+    `),
+    query(`
+      SELECT 
+        quality_inspection_id, batch_number, defect_type, defect_count, 
+        quality_status, defect_rate_pct
+      FROM quality_inspections
+      ORDER BY quality_inspection_id DESC
+      LIMIT 5;
+    `),
+    query(`SELECT shift_id, shift_name FROM shifts LIMIT 3;`)
+  ]);
+
+  const data = {
+    machines: machinesRes.status === 'fulfilled' ? machinesRes.value.rows : [],
+    stockItems: stockRes.status === 'fulfilled' ? stockRes.value.rows : [],
+    orders: ordersRes.status === 'fulfilled' ? ordersRes.value.rows : [],
+    quality: qualityRes.status === 'fulfilled' ? qualityRes.value.rows : [],
+    shifts: shiftsRes.status === 'fulfilled' ? shiftsRes.value.rows : [],
+  };
+
+  cachedSnapshot = { timestamp: now, data };
+  return data;
+}
 
 async function callGemini(prompt: string, contextPrompt: string, history: Array<{ sender: string; text: string }>) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey.trim() === '') return null;
 
-  // Candidate models in prioritized order
   const candidateModels = cachedWorkingModel 
-    ? [cachedWorkingModel, 'gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'] 
-    : ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.5-flash', 'gemini-1.5-flash'];
+    ? [cachedWorkingModel, 'gemini-2.5-flash', 'gemini-3.8-flash'] 
+    : ['gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-flash-latest'];
 
-  // Remove duplicates
   const uniqueModels = Array.from(new Set(candidateModels));
 
-  // Format conversational contents
   const contents: any[] = [];
-  const recentHistory = history.slice(-3);
+  const recentHistory = history.slice(-2);
   for (const h of recentHistory) {
     contents.push({
       role: h.sender === 'user' ? 'user' : 'model',
@@ -41,7 +103,7 @@ async function callGemini(prompt: string, contextPrompt: string, history: Array<
   contents.push({
     role: 'user',
     parts: [{
-      text: `${contextPrompt}\n\nUser Question: "${prompt}"\n\nPlease provide a direct, concise, markdown-formatted response with exact numbers, machine names, and actionable manufacturing advice.`
+      text: `${contextPrompt}\n\nUser Question: "${prompt}"\n\nProvide a concise, direct, markdown response with exact numbers and clear actionable guidance.`
     }]
   });
 
@@ -55,22 +117,21 @@ async function callGemini(prompt: string, contextPrompt: string, history: Array<
           contents,
           generationConfig: {
             temperature: 0.2,
-            maxOutputTokens: 800,
+            maxOutputTokens: 600,
           }
         }),
-        signal: AbortSignal.timeout(2800) // Strict 2.8s timeout so user never waits
+        signal: AbortSignal.timeout(1800) // Fast 1.8s timeout
       });
 
       if (res.ok) {
         const data = await res.json();
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text && text.trim().length > 0) {
-          cachedWorkingModel = model; // Cache the successful model
+          cachedWorkingModel = model;
           return { text: text.trim(), model };
         }
       }
     } catch {
-      // Gracefully continue to next model or fallback without flooding terminal logs
       continue;
     }
   }
@@ -89,60 +150,8 @@ export async function POST(req: Request) {
 
     const lower = message.toLowerCase().trim();
 
-    // 1. Fetch Complete Live Data Across Factory
-    const [machinesRes, stockRes, ordersRes, qualityRes, shiftsRes] = await Promise.allSettled([
-      query(`
-        SELECT 
-          m.machine_id, m.machine_code, m.machine_name, COALESCE(m.status, 'Running') as status, 
-          COALESCE(mt.machine_type_name, 'Industrial Equipment') as "machineType",
-          COALESCE(m.machine_age_years * 2000, 4200)::int as "operatingHours",
-          'Line 1 - Bay A' as location
-        FROM machines m
-        LEFT JOIN machine_types mt ON m.machine_type_id = mt.machine_type_id
-        ORDER BY m.machine_id ASC;
-      `),
-      query(`
-        SELECT 
-          s.inventory_stock_id, p.product_name, p.product_code, 
-          COALESCE(c.category_name, 'General') as category,
-          COALESCE(s.current_quantity, 0)::float as "quantityOnHand",
-          COALESCE(s.reorder_level, 0)::float as "reorderLevel",
-          COALESCE(p.unit, 'kg') as unit
-        FROM inventory_stock s
-        JOIN products p ON s.product_id = p.product_id
-        LEFT JOIN product_categories c ON p.category_id = c.category_id
-        ORDER BY p.product_name ASC;
-      `),
-      query(`
-        SELECT 
-          po.production_order_id, po.batch_number, p.product_name, 
-          COALESCE(po.planned_quantity, 0)::float as planned_quantity, 
-          COALESCE(po.actual_quantity, 0)::float as actual_quantity, 
-          COALESCE(po.production_status, 'Planned') as production_status,
-          COALESCE(po.production_efficiency_pct, 95.0)::float as production_efficiency_pct
-        FROM production_orders po
-        LEFT JOIN products p ON po.product_id = p.product_id
-        ORDER BY po.production_order_id DESC
-        LIMIT 8;
-      `),
-      query(`
-        SELECT 
-          quality_inspection_id, batch_number, defect_type, defect_count, 
-          quality_status, defect_rate_pct
-        FROM quality_inspections
-        ORDER BY quality_inspection_id DESC
-        LIMIT 5;
-      `),
-      query(`SELECT shift_id, shift_name FROM shifts LIMIT 3;`)
-    ]);
-
-    const machines = machinesRes.status === 'fulfilled' ? machinesRes.value.rows : [];
-    if (machinesRes.status === 'rejected') console.error('Chatbot machines query error:', machinesRes.reason);
-    const stockItems = stockRes.status === 'fulfilled' ? stockRes.value.rows : [];
-    if (stockRes.status === 'rejected') console.error('Chatbot stock query error:', stockRes.reason);
-    const orders = ordersRes.status === 'fulfilled' ? ordersRes.value.rows : [];
-    const quality = qualityRes.status === 'fulfilled' ? qualityRes.value.rows : [];
-    const shifts = shiftsRes.status === 'fulfilled' ? shiftsRes.value.rows : [];
+    // 1. Fetch live snapshot with TTL cache
+    const { machines, stockItems, orders, quality, shifts } = await getFactorySnapshot();
 
     const runningMachines = machines.filter((m: any) => (m.status || '').toLowerCase() === 'running');
     const idleMachines = machines.filter((m: any) => (m.status || '').toLowerCase() === 'idle');
