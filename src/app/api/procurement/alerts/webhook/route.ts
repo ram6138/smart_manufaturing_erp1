@@ -4,7 +4,8 @@ import { query } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const DEFAULT_PROCUREMENT_MANAGER_EMAIL = 'srirambehera035@gmail.com';
+const DEFAULT_PROCUREMENT_MANAGER_EMAIL = 'uttamthakur90400@gmail.com';
+const DEFAULT_INVENTORY_MANAGER_EMAIL = 'srirambehera035@gmail.com';
 
 export async function GET(req: NextRequest) {
   try {
@@ -117,7 +118,7 @@ export async function POST(req: NextRequest) {
     const payload = {
       event: 'procurement.alert.triggered',
       recipientEmail: targetEmail,
-      recipientName: 'Sriram Behera (Procurement Manager)',
+      recipientName: 'Uttam Thakur (Procurement Manager)',
       dispatchedAt: new Date().toISOString(),
       alertCount: alertsToDispatch.length,
       criticalCount: alertsToDispatch.filter((a: any) => a.severity === 'Critical').length,

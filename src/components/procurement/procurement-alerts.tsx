@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 
-const TARGET_EMAIL = "srirambehera035@gmail.com";
+const TARGET_EMAIL = "uttamthakur90400@gmail.com";
 
 interface ProcurementAlertsProps {
   alerts: ProcurementAlert[];
