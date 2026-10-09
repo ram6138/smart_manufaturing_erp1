@@ -209,7 +209,7 @@ export function ScheduleMaintenanceModal({
             <select
               value={selectedMachineId}
               onChange={(e) => setSelectedMachineId(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer"
+              className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors cursor-pointer [color-scheme:dark]"
             >
               <option value="" disabled className="text-slate-500">
                 -- Select Target Machine --
@@ -276,7 +276,12 @@ export function ScheduleMaintenanceModal({
                   placeholder="YYYY-MM-DD"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+                  onClick={(e) => {
+                    try {
+                      (e.target as HTMLInputElement).showPicker?.();
+                    } catch {}
+                  }}
+                  className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm focus:outline-none focus:border-cyan-500 transition-colors [color-scheme:dark] cursor-pointer"
                 />
                 <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" />
               </div>

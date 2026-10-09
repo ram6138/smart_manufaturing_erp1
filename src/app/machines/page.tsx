@@ -22,9 +22,9 @@ import {
 } from "lucide-react";
 
 export default function MachinesPage() {
-  const [machines, setMachines] = useState<MachineItem[]>([]);
-  const [alerts, setAlerts] = useState<MaintenanceAlert[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [machines, setMachines] = useState<MachineItem[]>(INITIAL_MACHINES);
+  const [alerts, setAlerts] = useState<MaintenanceAlert[]>(INITIAL_MAINTENANCE_ALERTS);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Filter state
   const [filters, setFilters] = useState<MachineFilterState>({
@@ -35,7 +35,7 @@ export default function MachinesPage() {
   });
 
   // Selected machine for Sensor Monitoring section
-  const [activeChartMachineId, setActiveChartMachineId] = useState<string>("1");
+  const [activeChartMachineId, setActiveChartMachineId] = useState<string>("mch_001");
   const [activeKpiCard, setActiveKpiCard] = useState<string>("total");
 
   // Modal states
@@ -51,7 +51,6 @@ export default function MachinesPage() {
 
   // Fetch live machine data from PostgreSQL API
   const fetchMachines = useCallback(async () => {
-    setIsLoading(true);
     try {
       const res = await fetch("/api/machines");
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -60,9 +59,6 @@ export default function MachinesPage() {
       if (data.status === "success" && data.machines && data.machines.length > 0) {
         setMachines(data.machines);
         if (data.alerts) setAlerts(data.alerts);
-        if (data.machines.length > 0) {
-          setActiveChartMachineId(data.machines[0].id);
-        }
       }
     } catch (err: any) {
       console.warn("Using fallback machine data:", err.message);
@@ -78,28 +74,21 @@ export default function MachinesPage() {
         const res = await fetch("/api/machines", { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
-        if (data.status === "success" && isMounted) {
-          setMachines(data.machines || []);
+        if (data.status === "success" && isMounted && data.machines?.length > 0) {
+          setMachines(data.machines);
           if (data.alerts) setAlerts(data.alerts);
-          if (data.machines?.length > 0) {
-            setActiveChartMachineId((prev) => prev || data.machines[0].id);
-          }
         }
       } catch (err: any) {
         console.warn("Using fallback machine data:", err.message);
-      } finally {
-        if (isMounted) setIsLoading(false);
       }
     }
 
     load();
-    const interval = setInterval(load, 4000);
-    window.addEventListener("focus", load);
+    const interval = setInterval(load, 5000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
-      window.removeEventListener("focus", load);
     };
   }, []);
 
